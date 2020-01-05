@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cordova-plugin-samba" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+  <name>SambaPlugin</name>
+
+  <js-module name="SambaPlugin" src="www/SambaPlugin.js">
+    <clobbers target="window.samba"/>
+  </js-module>
+
+  <platform name="android">
+    <source-file src="src/android/SambaPlugin.java" target-dir="src/net/cloudseat/cordova"/>
+    <source-file src="src/android/SambaAdapter.java" target-dir="src/net/cloudseat/cordova"/>
+    <source-file src="src/android/jcifs-1.3.19.jar" target-dir="libs" />
+
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="SambaPlugin">
+        <param name="android-package" value="net.cloudseat.cordova.SambaPlugin"/>
+      </feature>
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.INTERNET" />
+    </config-file>
+  </platform>
+
+</plugin>
