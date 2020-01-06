@@ -25,9 +25,12 @@ package net.cloudseat.cordova;
 
 import jcifs.smb.*;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import java.net.MalformedURLException;
 import java.text.Collator;
@@ -75,17 +78,33 @@ class SambaAdapter {
     /**
      * Creates empty directory
      */
-    public void mkdir(String path) throws MalformedURLException, SmbException {
-        SmbFile smb = new SmbFile(path, auth);
-        smb.mkdir();
+    public JSONObject mkdir(String path) throws MalformedURLException, SmbException, JSONException {
+        SmbFile smbFile = new SmbFile(path, auth);
+        smbFile.mkdir();
+
+        JSONObject entry = new JSONObject();
+        entry.put("name", parseName(smbFile.getName()));
+        entry.put("path", smbFile.getPath());
+        entry.put("size", 0);
+        entry.put("lastModified", System.currentTimeMillis());
+        entry.put("isDirectory", true);
+        return entry;
     }
 
     /**
      * Creates empty file
      */
-    public void mkfile(String path) throws MalformedURLException, SmbException {
+    public JSONObject mkfile(String path) throws MalformedURLException, SmbException, JSONException {
         SmbFile smbFile = new SmbFile(path, auth);
         smbFile.createNewFile();
+
+        JSONObject entry = new JSONObject();
+        entry.put("name", parseName(smbFile.getName()));
+        entry.put("path", smbFile.getPath());
+        entry.put("size", 0);
+        entry.put("lastModified", System.currentTimeMillis());
+        entry.put("isDirectory", false);
+        return entry;
     }
 
     /**
@@ -126,30 +145,49 @@ class SambaAdapter {
      */
     public byte[] read(String path) throws IOException {
         SmbFile file = new SmbFile(path, auth);
-        InputStream is = file.getInputStream();
+        InputStream in = file.getInputStream();
 
         byte[] bytes = new byte[(int) file.length()];
-        is.read(bytes);
-        is.close();
+        in.read(bytes);
+        in.close();
         return bytes;
+    }
+
+    /**
+     * Upload local file to remote
+     */
+    public JSONObject upload(String localPath, String smbPath) throws IOException, JSONException {
+        SmbFile smbFile = new SmbFile(smbPath, auth);
+        FileInputStream in = new FileInputStream(localPath);
+        OutputStream out = smbFile.getOutputStream();
+
+        byte[] b = new byte[1024];
+        while (in.read(b) > 0 ) {
+            out.write(b);
+        }
+
+        JSONObject entry = new JSONObject();
+        entry.put("name", parseName(smbFile.getName()));
+        entry.put("path", smbFile.getPath());
+        entry.put("size", smbFile.length());
+        entry.put("lastModified", System.currentTimeMillis());
+        entry.put("isDirectory", false);
+        return entry;
     }
 
     /**
      * Download remote file to local path
      */
-    public void download(String path, String localPath) throws IOException {
-        SmbFile file = new SmbFile(path, auth);
-        InputStream in = file.getInputStream();
+    public void download(String smbPath, String localPath) throws IOException {
+        SmbFile smbFile = new SmbFile(smbPath, auth);
+        InputStream in = smbFile.getInputStream();
         FileOutputStream out = new FileOutputStream(localPath);
 
         byte[] b = new byte[8192];
-        int len, total = 0;
+        int len = 0;
         while((len = in.read(b)) > 0) {
             out.write(b, 0, len);
-            total += len;
-            System.out.println(total + " bytes transfered");
         }
-
         in.close();
         out.close();
     }

@@ -23,6 +23,8 @@
 
 package net.cloudseat.cordova;
 
+import android.content.Context;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
@@ -42,41 +44,33 @@ public class SambaPlugin extends CordovaPlugin {
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callback)
         throws JSONException {
-        String path = args.getString(0);
 
-        try {
-            switch (action) {
+        switch (action) {
             case "auth":
                 String username = args.getString(0);
                 String password = args.getString(1);
                 samba.setPrincipal(username, password);
                 callback.success();
                 break;
-            case "list":
-                list(path, callback);
-                break;
-            case "read":
-                read(path, callback);
-                break;
-            case "delete":
-                samba.delete(path);
-                callback.success();
+            case "list": list(args, callback); break;
+            case "read": read(args, callback); break;
+            case "upload": upload(args, callback); break;
+            case "mkfile": mkfile(args, callback); break;
+            case "mkdir": mkdir(args, callback); break;
+            case "delete": delete(args, callback); break;
             default:
                 callback.error("Undefined method:" + action);
                 return false;
-            }
-            return true;
-        } catch (Exception e) {
-            callback.error(e.getMessage());
-            return false;
         }
+        return true;
     }
 
-    private void list(String path, CallbackContext callback) {
+    private void list(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
                 try {
+                    String path = args.getString(0);
                     callback.success(samba.list(path));
                 } catch (Exception e) {
                     callback.error(e.getMessage());
@@ -85,12 +79,78 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
-    private void read(String path, CallbackContext callback) {
+    private void read(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
                 try {
+                    String path = args.getString(0);
                     callback.success(samba.read(path));
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void mkfile(CordovaArgs args, CallbackContext callback) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String path = args.getString(0);
+                    callback.success(samba.mkfile(path));
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void mkdir(CordovaArgs args, CallbackContext callback) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String path = args.getString(0);
+                    callback.success(samba.mkdir(path));
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void delete(CordovaArgs args, CallbackContext callback) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String path = args.getString(0);
+                    samba.delete(path);
+                    callback.success();
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void upload(CordovaArgs args, CallbackContext callback) throws JSONException {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String localPath = args.getString(0);
+                    String smbPath = args.getString(1);
+
+                    Context context = cordova.getActivity().getApplicationContext();
+                    String nativePath = FilePathUtil.getNativePath(context, localPath);
+
+                    int index = nativePath.lastIndexOf("/");
+                    String fileName = nativePath.substring(index + 1);
+
+                    callback.success(samba.upload(nativePath, smbPath + fileName));
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
