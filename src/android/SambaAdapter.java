@@ -84,10 +84,10 @@ class SambaAdapter {
 
         JSONObject entry = new JSONObject();
         entry.put("name", parseName(smbFile.getName()));
+        entry.put("type", parseType(smbFile));
         entry.put("path", smbFile.getPath());
         entry.put("size", 0);
         entry.put("lastModified", System.currentTimeMillis());
-        entry.put("isDirectory", true);
         return entry;
     }
 
@@ -100,10 +100,10 @@ class SambaAdapter {
 
         JSONObject entry = new JSONObject();
         entry.put("name", parseName(smbFile.getName()));
+        entry.put("type", parseType(smbFile));
         entry.put("path", smbFile.getPath());
         entry.put("size", 0);
         entry.put("lastModified", System.currentTimeMillis());
-        entry.put("isDirectory", false);
         return entry;
     }
 
@@ -168,10 +168,10 @@ class SambaAdapter {
 
         JSONObject entry = new JSONObject();
         entry.put("name", parseName(smbFile.getName()));
+        entry.put("type", parseType(smbFile));
         entry.put("path", smbFile.getPath());
         entry.put("size", smbFile.length());
         entry.put("lastModified", System.currentTimeMillis());
-        entry.put("isDirectory", false);
         return entry;
     }
 
@@ -208,10 +208,10 @@ class SambaAdapter {
             }
             JSONObject entry = new JSONObject();
             entry.put("name", parseName(file.getName()));
+            entry.put("type", parseType(file));
             entry.put("path", file.getPath());
             entry.put("size", file.length());
             entry.put("lastModified", file.getLastModified());
-            entry.put("isDirectory", file.isDirectory());
             list.add(entry);
         }
         return list;
@@ -225,6 +225,14 @@ class SambaAdapter {
     }
 
     /**
+     * Gets default type excerpt file
+     * 0-file, 1-directory, 4-server, 5-share
+     */
+    private int parseType(SmbFile file) throws SmbException {
+        return file.isFile() ? 0 : file.getType();
+    }
+
+    /**
      * Private comparator class for sorting
      */
     private class SambaComparator implements Comparator<JSONObject> {
@@ -234,10 +242,9 @@ class SambaAdapter {
         @Override
         public int compare(JSONObject o1, JSONObject o2) {
             try {
-                boolean d1 = o1.getBoolean("isDirectory");
-                boolean d2 = o2.getBoolean("isDirectory");
-                if (d1 && !d2) return -1;
-                if (!d1 && d2) return 1;
+                int t1 = o1.getInt("type");
+                int t2 = o2.getInt("type");
+                if (t1 != t2) return t2 - t1;
                 return collator.compare(o1.getString("name"), o2.getString("name"));
             } catch (JSONException e) {
                 return 0;
