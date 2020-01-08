@@ -30,6 +30,7 @@ import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Plugin Main Class
@@ -151,7 +152,13 @@ public class SambaPlugin extends CordovaPlugin {
                     int index = nativePath.lastIndexOf("/");
                     String fileName = nativePath.substring(index + 1);
 
-                    callback.success(samba.upload(nativePath, smbPath + fileName));
+                    JSONObject result = samba.upload(nativePath, smbPath + fileName, new Callback() {
+                        @Override
+                        public void onProgress(float progress) {
+                            webView.sendJavascript("window.samba.onUpload(" + progress + ")");
+                        }
+                    });
+                    callback.success(result);
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }

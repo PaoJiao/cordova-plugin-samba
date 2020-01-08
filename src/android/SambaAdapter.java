@@ -47,9 +47,7 @@ import org.json.JSONObject;
 
 class SambaAdapter {
 
-    /**
-     * Password authentication
-     */
+    private static final int STREAM_BUFFER_SIZE = 8192;
     private NtlmPasswordAuthentication auth;
 
     /**
@@ -160,15 +158,25 @@ class SambaAdapter {
     /**
      * Upload local file to remote
      */
-    public JSONObject upload(String localPath, String smbPath) throws IOException, JSONException {
+    public JSONObject upload(String localPath, String smbPath, Callback callback)
+        throws IOException, JSONException {
+
+        File file = new File(localPath);
         SmbFile smbFile = new SmbFile(smbPath, auth);
-        FileInputStream in = new FileInputStream(localPath);
+        FileInputStream in = new FileInputStream(file);
         OutputStream out = smbFile.getOutputStream();
 
-        byte[] b = new byte[1024];
-        while (in.read(b) > 0 ) {
-            out.write(b);
+        long totalSize = file.length();
+        long size = 0;
+        byte[] b = new byte[STREAM_BUFFER_SIZE];
+        int len = 0;
+        while((len = in.read(b)) > 0) {
+            out.write(b, 0, len);
+            size += len;
+            callback.onProgress((float) size / totalSize);
         }
+        in.close();
+        out.close();
 
         JSONObject entry = new JSONObject();
         entry.put("name", parseName(smbFile.getName()));
@@ -187,7 +195,7 @@ class SambaAdapter {
         InputStream in = smbFile.getInputStream();
         FileOutputStream out = new FileOutputStream(localPath);
 
-        byte[] b = new byte[8192];
+        byte[] b = new byte[STREAM_BUFFER_SIZE];
         int len = 0;
         while((len = in.read(b)) > 0) {
             out.write(b, 0, len);
@@ -256,4 +264,8 @@ class SambaAdapter {
         }
     }
 
+}
+
+interface Callback {
+    public void onProgress(float progress);
 }
