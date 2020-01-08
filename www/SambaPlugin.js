@@ -27,6 +27,10 @@ module.exports = {
 
   delete(path, success, error) {
     exec(success, error, 'SambaPlugin', 'delete', [ path ])
+  },
+
+  wol(mac, success, error) {
+    exec(success, error, 'SambaPlugin', 'wol', [ mac ])
   }
 
 }

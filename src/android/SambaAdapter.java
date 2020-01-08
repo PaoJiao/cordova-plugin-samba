@@ -72,7 +72,11 @@ class SambaAdapter {
      * Sets username and password authentication
      */
     public void setPrincipal(String username, String password) {
-        auth = new NtlmPasswordAuthentication(null, username, password);
+        if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
+            auth = new NtlmPasswordAuthentication(null, username, password);
+        } else {
+            auth = null;
+        }
     }
 
     /**

@@ -16,7 +16,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.List;
 
-public class FilePathUtil {
+public class NativePath {
 
     public static String getNativePath(Context context, String path) throws Exception {
         Uri uri = Uri.parse(path);

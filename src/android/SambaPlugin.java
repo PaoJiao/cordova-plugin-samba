@@ -58,6 +58,7 @@ public class SambaPlugin extends CordovaPlugin {
             case "mkfile": mkfile(args, callback); break;
             case "mkdir": mkdir(args, callback); break;
             case "delete": delete(args, callback); break;
+            case "wol": wol(args, callback); break;
             default:
                 callback.error("Undefined method:" + action);
                 return false;
@@ -145,12 +146,27 @@ public class SambaPlugin extends CordovaPlugin {
                     String smbPath = args.getString(1);
 
                     Context context = cordova.getActivity().getApplicationContext();
-                    String nativePath = FilePathUtil.getNativePath(context, localPath);
+                    String nativePath = NativePath.getNativePath(context, localPath);
 
                     int index = nativePath.lastIndexOf("/");
                     String fileName = nativePath.substring(index + 1);
 
                     callback.success(samba.upload(nativePath, smbPath + fileName));
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void wol(CordovaArgs args, CallbackContext callback) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String mac = args.getString(0);
+                    WakeOnLan.broadcast(mac);
+                    callback.success();
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
