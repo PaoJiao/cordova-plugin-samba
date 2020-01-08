@@ -26,6 +26,9 @@ samba.read(path, success, error)
 Uploads local file to smb server:
 ```
 samba.upload(localPath, smbPath, success, error)
+samba.onUpload = function(progress) {
+    console.log(progress)
+}
 ```
 
 Creates empty file:
