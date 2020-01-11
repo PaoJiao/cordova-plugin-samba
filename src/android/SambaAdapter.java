@@ -47,19 +47,19 @@ import org.json.JSONObject;
 
 class SambaAdapter {
 
-    private static final int STREAM_BUFFER_SIZE = 8192;
+    private static final int BUFFER_SIZE = 8192;
     private NtlmPasswordAuthentication auth;
 
     /**
      * Lists remote directories and files
+     * @param String path
+     * @return JSONArray
      */
-    public JSONArray list(String path) throws MalformedURLException, SmbException, JSONException {
+    public JSONArray listFiles(String path) throws MalformedURLException, SmbException, JSONException {
         SmbFile file = new SmbFile(path, auth);
         if (file.exists()) {
             SmbFile[] files = file.listFiles();
-            // Parse smb array to arraylist
             List<JSONObject> list = parseToList(files);
-            // Sort arraylist by locale
             Collections.sort(list, new SambaComparator());
             return new JSONArray(list);
         }
@@ -68,6 +68,9 @@ class SambaAdapter {
 
     /**
      * Sets username and password authentication
+     * @param String username
+     * @param String password
+     * @return
      */
     public void setPrincipal(String username, String password) {
         if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
@@ -79,6 +82,8 @@ class SambaAdapter {
 
     /**
      * Creates empty directory
+     * @param String path
+     * @return JSONObject
      */
     public JSONObject mkdir(String path) throws MalformedURLException, SmbException, JSONException {
         SmbFile smbFile = new SmbFile(path, auth);
@@ -95,6 +100,8 @@ class SambaAdapter {
 
     /**
      * Creates empty file
+     * @param String path
+     * @return JSONObject
      */
     public JSONObject mkfile(String path) throws MalformedURLException, SmbException, JSONException {
         SmbFile smbFile = new SmbFile(path, auth);
@@ -111,6 +118,8 @@ class SambaAdapter {
 
     /**
      * Deletes directories or files
+     * @param String path
+     * @return
      */
     public void delete(String path) throws MalformedURLException, SmbException {
         SmbFile smbFile = new SmbFile(path, auth);
@@ -119,33 +128,44 @@ class SambaAdapter {
 
     /**
      * Renames directory or file
+     * @param String path
+     * @param String newPath
+     * @return
      */
-    public void rename(String path, String newPath) throws MalformedURLException, SmbException {
+    public void renameTo(String path, String newPath) throws MalformedURLException, SmbException {
         SmbFile smbFile = new SmbFile(path, auth);
         smbFile.renameTo(new SmbFile(newPath, auth));
     }
 
     /**
-     * Copies directory or file to another panth
+     * Copies directory or file to another path
+     * @param String path
+     * @param String newPath
+     * @return
      */
-    public void copy(String path, String newPath) throws MalformedURLException, SmbException {
+    public void copyTo(String path, String newPath) throws MalformedURLException, SmbException {
         SmbFile smbFile = new SmbFile(path, auth);
         smbFile.copyTo(new SmbFile(newPath, auth));
     }
 
     /**
      * Moves directory or file to another panth
+     * @param String path
+     * @param String newPath
+     * @return
      */
-    public void move(String path, String newPath) throws MalformedURLException, SmbException {
+    public void moveTo(String path, String newPath) throws MalformedURLException, SmbException {
         SmbFile smbFile = new SmbFile(path, auth);
         smbFile.copyTo(new SmbFile(newPath, auth));
         smbFile.delete();
     }
 
     /**
-     * Reads the content of remote file
+     * Reads remote file as byte array
+     * @param String path
+     * @return byte[]
      */
-    public byte[] read(String path) throws IOException {
+    public byte[] readAsByteArray(String path) throws IOException {
         SmbFile file = new SmbFile(path, auth);
         InputStream in = file.getInputStream();
 
@@ -156,7 +176,21 @@ class SambaAdapter {
     }
 
     /**
+     * Reads remote file as string text
+     * @param path
+     * @return String
+     */
+    public String readAsText(String path) throws IOException {
+        byte[] bytes = readAsByteArray(path)
+        return new String(bytes, "UTF-8");
+    }
+
+    /**
      * Upload local file to remote
+     * @param String localPath
+     * @param String smbPath
+     * @param Callback callback(progress)
+     * @return JSONObject
      */
     public JSONObject upload(String localPath, String smbPath, Callback callback)
         throws IOException, JSONException {
@@ -168,7 +202,7 @@ class SambaAdapter {
 
         long totalSize = file.length();
         long size = 0;
-        byte[] b = new byte[STREAM_BUFFER_SIZE];
+        byte[] b = new byte[BUFFER_SIZE];
         int len = 0;
         while((len = in.read(b)) > 0) {
             out.write(b, 0, len);
@@ -189,13 +223,16 @@ class SambaAdapter {
 
     /**
      * Download remote file to local path
+     * @param String smbPath
+     * @param String localPath
+     * @return
      */
     public void download(String smbPath, String localPath) throws IOException {
         SmbFile smbFile = new SmbFile(smbPath, auth);
         InputStream in = smbFile.getInputStream();
         FileOutputStream out = new FileOutputStream(localPath);
 
-        byte[] b = new byte[STREAM_BUFFER_SIZE];
+        byte[] b = new byte[BUFFER_SIZE];
         int len = 0;
         while((len = in.read(b)) > 0) {
             out.write(b, 0, len);
@@ -210,6 +247,8 @@ class SambaAdapter {
 
     /**
      * Parses smbfiles to arraylist
+     * @param SmbFile[] files
+     * @return List<JSONObject>
      */
     private List<JSONObject> parseToList(SmbFile[] files) throws SmbException, JSONException {
         List<JSONObject> list = new ArrayList<JSONObject>();
@@ -231,6 +270,8 @@ class SambaAdapter {
 
     /**
      * Trims the '/' in the end.
+     * @param String name
+     * @return String
      */
     private String parseName(String name) {
         return name.endsWith("/") ? name.substring(0, name.length() - 1) : name;
@@ -238,7 +279,8 @@ class SambaAdapter {
 
     /**
      * Gets default type excerpt file
-     * 0-file, 1-directory, 4-server, 5-share
+     * @param SmbFile file
+     * @return int 0-file, 1-directory, 4-server, 5-share
      */
     private int parseType(SmbFile file) throws SmbException {
         return file.isFile() ? 0 : file.getType();

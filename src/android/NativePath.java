@@ -18,9 +18,9 @@ import java.util.List;
 
 public class NativePath {
 
-    public static String getNativePath(Context context, String path) throws Exception {
+    public static String parse(Context context, String path) throws Exception {
         Uri uri = Uri.parse(path);
-        String filePath = parsePath(context, uri);
+        String filePath = parseUri(context, uri);
 
         if (filePath == null) {
             throw new Exception("Unable to resolve filesystem path.");
@@ -42,7 +42,7 @@ public class NativePath {
      * @param context The context.
      * @param uri The Uri to query.
      */
-    private static String parsePath(final Context context, final Uri uri) throws Exception {
+    private static String parseUri(final Context context, final Uri uri) throws Exception {
         if (fileExists(uri.getPath())) {
             return uri.getPath();
         }
@@ -116,7 +116,7 @@ public class NativePath {
             // Return the remote address
             if (isGooglePhotosUri(uri)) {
                 String contentPath = getContentFromSegments(uri.getPathSegments());
-                return contentPath != "" ? parsePath(context, Uri.parse(contentPath)) : null;
+                return contentPath != "" ? parseUri(context, Uri.parse(contentPath)) : null;
             }
 
             if (isGoogleDriveUri(uri)) {

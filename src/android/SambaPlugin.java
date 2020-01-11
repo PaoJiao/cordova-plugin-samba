@@ -24,6 +24,8 @@
 package net.cloudseat.cordova;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -53,13 +55,14 @@ public class SambaPlugin extends CordovaPlugin {
                 samba.setPrincipal(username, password);
                 callback.success();
                 break;
-            case "list": list(args, callback); break;
-            case "read": read(args, callback); break;
-            case "upload": upload(args, callback); break;
-            case "mkfile": mkfile(args, callback); break;
-            case "mkdir": mkdir(args, callback); break;
-            case "delete": delete(args, callback); break;
-            case "wol": wol(args, callback); break;
+            case "listFiles":   listFiles(args, callback); break;
+            case "readAsText":  readAsText(args, callback); break;
+            case "upload":      upload(args, callback); break;
+            case "mkfile":      mkfile(args, callback); break;
+            case "mkdir":       mkdir(args, callback); break;
+            case "delete":      delete(args, callback); break;
+            case "openFile":    openFile(args, callback); break;
+            case "wakeOnLan":   wakeOnLan(args, callback); break;
             default:
                 callback.error("Undefined method:" + action);
                 return false;
@@ -67,13 +70,13 @@ public class SambaPlugin extends CordovaPlugin {
         return true;
     }
 
-    private void list(CordovaArgs args, CallbackContext callback) {
+    private void listFiles(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     String path = args.getString(0);
-                    callback.success(samba.list(path));
+                    callback.success(samba.listFiles(path));
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
@@ -81,13 +84,13 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
-    private void read(CordovaArgs args, CallbackContext callback) {
+    private void readAsText(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     String path = args.getString(0);
-                    callback.success(samba.read(path));
+                    callback.success(samba.readAsText(path));
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
@@ -147,7 +150,7 @@ public class SambaPlugin extends CordovaPlugin {
                     String smbPath = args.getString(1);
 
                     Context context = cordova.getActivity().getApplicationContext();
-                    String nativePath = NativePath.getNativePath(context, localPath);
+                    String nativePath = NativePath.parse(context, localPath);
 
                     int index = nativePath.lastIndexOf("/");
                     String fileName = nativePath.substring(index + 1);
@@ -166,7 +169,28 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
-    private void wol(CordovaArgs args, CallbackContext callback) {
+    private void openFile(CordovaArgs args, CallbackContext callback) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String path = args.getString(0);
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.setDataAndType(Uri.parse(path), "text/plain");
+                    cordova.getActivity().startActivity(intent);
+
+                    callback.success();
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void wakeOnLan(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {

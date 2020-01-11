@@ -5,12 +5,16 @@ module.exports = {
     exec(success, error, 'SambaPlugin', 'auth', [ username, password ])
   },
 
-  list(path, success, error) {
-    exec(success, error, 'SambaPlugin', 'list', [ path ])
+  listFiles(path, success, error) {
+    exec(success, error, 'SambaPlugin', 'listFiles', [ path ])
   },
 
-  read(path, success, error) {
-    exec(success, error, 'SambaPlugin', 'read', [ path ])
+  readAsText(path, success, error) {
+    exec(success, error, 'SambaPlugin', 'readAsText', [ path ])
+  },
+
+  openFile(path, success, error) {
+    exec(success, error, 'SambaPlugin', 'openFile', [ path ])
   },
 
   upload(localPath, smbPath, success, error) {
@@ -29,8 +33,8 @@ module.exports = {
     exec(success, error, 'SambaPlugin', 'delete', [ path ])
   },
 
-  wol(mac, success, error) {
-    exec(success, error, 'SambaPlugin', 'wol', [ mac ])
+  wakeOnLan(mac, success, error) {
+    exec(success, error, 'SambaPlugin', 'wakeOnLan', [ mac ])
   }
 
 }
