@@ -181,7 +181,7 @@ class SambaAdapter {
      * @return String
      */
     public String readAsText(String path) throws IOException {
-        byte[] bytes = readAsByteArray(path)
+        byte[] bytes = readAsByteArray(path);
         return new String(bytes, "UTF-8");
     }
 

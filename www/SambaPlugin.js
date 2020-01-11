@@ -13,6 +13,10 @@ module.exports = {
     exec(success, error, 'SambaPlugin', 'readAsText', [ path ])
   },
 
+  readAsByteArray(path, success, error) {
+    exec(success, error, 'SambaPlugin', 'readAsByteArray', [ path ])
+  },
+
   openFile(path, success, error) {
     exec(success, error, 'SambaPlugin', 'openFile', [ path ])
   },

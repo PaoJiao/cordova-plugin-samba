@@ -26,6 +26,7 @@ package net.cloudseat.cordova;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.webkit.MimeTypeMap;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -55,14 +56,15 @@ public class SambaPlugin extends CordovaPlugin {
                 samba.setPrincipal(username, password);
                 callback.success();
                 break;
-            case "listFiles":   listFiles(args, callback); break;
-            case "readAsText":  readAsText(args, callback); break;
-            case "upload":      upload(args, callback); break;
-            case "mkfile":      mkfile(args, callback); break;
-            case "mkdir":       mkdir(args, callback); break;
-            case "delete":      delete(args, callback); break;
-            case "openFile":    openFile(args, callback); break;
-            case "wakeOnLan":   wakeOnLan(args, callback); break;
+            case "listFiles": listFiles(args, callback); break;
+            case "readAsText": readAsText(args, callback); break;
+            case "readAsByteArray": readAsByteArray(args, callback); break;
+            case "upload": upload(args, callback); break;
+            case "mkfile": mkfile(args, callback); break;
+            case "mkdir": mkdir(args, callback); break;
+            case "delete": delete(args, callback); break;
+            case "openFile": openFile(args, callback); break;
+            case "wakeOnLan": wakeOnLan(args, callback); break;
             default:
                 callback.error("Undefined method:" + action);
                 return false;
@@ -91,6 +93,20 @@ public class SambaPlugin extends CordovaPlugin {
                 try {
                     String path = args.getString(0);
                     callback.success(samba.readAsText(path));
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void readAsByteArray(CordovaArgs args, CallbackContext callback) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String path = args.getString(0);
+                    callback.success(samba.readAsByteArray(path));
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
@@ -175,14 +191,16 @@ public class SambaPlugin extends CordovaPlugin {
             public void run() {
                 try {
                     String path = args.getString(0);
+                    String extension = MimeTypeMap.getFileExtensionFromUrl(path);
+                    String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
 
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    intent.setDataAndType(Uri.parse(path), "text/plain");
+                    intent.setDataAndType(Uri.parse(path), mimeType);
                     cordova.getActivity().startActivity(intent);
 
-                    callback.success();
+                    callback.success(mimeType);
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
