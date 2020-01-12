@@ -31,7 +31,9 @@
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <activity android:name="net.cloudseat.cordova.MediaPlayerActivity" android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
+      <activity android:name="net.cloudseat.cordova.MediaPlayerActivity"
+        android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
+        android:configChanges="orientation|screenSize"/>
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest">

@@ -1,12 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MediaPlayerActivity">
+    tools:context="net.cloudseat.cordova.MediaPlayerActivity"
+    android:id="@+id/main_layout">
 
     <SurfaceView
+        android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/surface"/>
+        android:layout_centerInParent="true" />
+
+    <ImageButton
+        android:id="@+id/play_or_pause"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_centerInParent="true"
+        android:background="#336699"
+        android:onClick="onPlayOrPause" />
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:stretchColumns="1">
+
+        <TableRow android:gravity="center">
+            <TextView
+                android:id="@+id/position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:text="00:00:00" />
+
+             <SeekBar
+                android:id="@+id/seek_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:maxHeight="2dp"
+                android:minHeight="2dp"
+                android:max="0"
+                android:progress="0" />
+
+            <TextView
+                android:id="@+id/duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:text="00:00:00" />
+        </TableRow>
+    </TableLayout>
 
 </RelativeLayout>
