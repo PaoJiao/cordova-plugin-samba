@@ -1,7 +1,5 @@
 package net.cloudseat.cordova;
 
-import java.io.IOException;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -10,6 +8,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import java.io.IOException;
 import java.util.Enumeration;
 
 public class WakeOnLan {

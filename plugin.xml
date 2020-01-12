@@ -9,14 +9,29 @@
   <platform name="android">
     <source-file src="src/android/SambaPlugin.java" target-dir="src/net/cloudseat/cordova"/>
     <source-file src="src/android/SambaAdapter.java" target-dir="src/net/cloudseat/cordova"/>
+    <source-file src="src/android/MediaPlayerActivity.java" target-dir="src/net/cloudseat/cordova"/>
     <source-file src="src/android/NativePath.java" target-dir="src/net/cloudseat/cordova"/>
     <source-file src="src/android/WakeOnLan.java" target-dir="src/net/cloudseat/cordova"/>
-    <source-file src="src/android/jcifs-1.3.19.jar" target-dir="libs" />
+    <source-file src="src/android/bmds/BmdsLog.java" target-dir="src/com/greatape/bmds"/>
+    <source-file src="src/android/bmds/BufferedDataSource.java" target-dir="src/com/greatape/bmds"/>
+    <source-file src="src/android/bmds/BufferedMediaDataSource.java" target-dir="src/com/greatape/bmds"/>
+    <source-file src="src/android/bmds/BufferedMediaStream.java" target-dir="src/com/greatape/bmds"/>
+    <source-file src="src/android/bmds/BufferedSourceBase.java" target-dir="src/com/greatape/bmds"/>
+    <source-file src="src/android/bmds/LoadRunner.java" target-dir="src/com/greatape/bmds"/>
+    <source-file src="src/android/bmds/LoadRunnerClient.java" target-dir="src/com/greatape/bmds"/>
+    <source-file src="src/android/bmds/MediaCache.java" target-dir="src/com/greatape/bmds"/>
+    <source-file src="src/android/bmds/ReadStats.java" target-dir="src/com/greatape/bmds"/>
+    <source-file src="src/android/layout/media_layout.xml" target-dir="res/layout" />
+    <source-file src="src/android/libs/jcifs-1.3.19.jar" target-dir="libs" />
 
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="SambaPlugin">
         <param name="android-package" value="net.cloudseat.cordova.SambaPlugin"/>
       </feature>
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <activity android:name="net.cloudseat.cordova.MediaPlayerActivity" android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest">

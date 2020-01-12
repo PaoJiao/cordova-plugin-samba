@@ -51,6 +51,15 @@ class SambaAdapter {
     private NtlmPasswordAuthentication auth;
 
     /**
+     * Get SmbFile instance
+     * @param String path
+     * @return SmbFile
+     */
+    public SmbFile getSmbFileInstance(String path) throws IOException {
+        return new SmbFile(path, auth);
+    }
+
+    /**
      * Lists remote directories and files
      * @param String path
      * @return JSONArray

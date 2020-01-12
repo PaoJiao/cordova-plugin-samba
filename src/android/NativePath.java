@@ -1,15 +1,15 @@
 package net.cloudseat.cordova;
 
-import android.text.TextUtils;
 import android.content.ContentUris;
 import android.content.Context;
-import android.net.Uri;
-import android.provider.OpenableColumns;
 import android.database.Cursor;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Environment;
+import android.os.Build;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
+import android.text.TextUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;

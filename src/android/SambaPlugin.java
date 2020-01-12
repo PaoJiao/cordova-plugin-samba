@@ -35,6 +35,11 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+import jcifs.smb.SmbFile;
+import com.greatape.bmds.BufferedMediaDataSource;
+
 /**
  * Plugin Main Class
  */
@@ -63,6 +68,7 @@ public class SambaPlugin extends CordovaPlugin {
             case "mkfile": mkfile(args, callback); break;
             case "mkdir": mkdir(args, callback); break;
             case "delete": delete(args, callback); break;
+            case "openMedia": openMedia(args, callback); break;
             case "openFile": openFile(args, callback); break;
             case "wakeOnLan": wakeOnLan(args, callback); break;
             default:
@@ -208,6 +214,24 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    private void openMedia(CordovaArgs args, CallbackContext callback) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String path = args.getString(0);
+                    MediaPlayerActivity.dataSource = createBufferedMediaDataSource(path);
+
+                    Intent intent = new Intent(cordova.getActivity(), MediaPlayerActivity.class);
+                    cordova.getActivity().startActivity(intent);
+                    callback.success();
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
     private void wakeOnLan(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -219,6 +243,25 @@ public class SambaPlugin extends CordovaPlugin {
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
+            }
+        });
+    }
+
+    private BufferedMediaDataSource createBufferedMediaDataSource(String path) throws IOException {
+        SmbFile smbFile = samba.getSmbFileInstance(path);
+
+        return new BufferedMediaDataSource(new BufferedMediaDataSource.StreamCreator() {
+            @Override
+            public InputStream openStream() throws IOException {
+                return smbFile.getInputStream();
+            }
+            @Override
+            public long length() throws IOException {
+                return smbFile.length();
+            }
+            @Override
+            public String typeName() {
+                return "SmbFile";
             }
         });
     }
