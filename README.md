@@ -15,12 +15,13 @@ samba.auth('username', 'password')
 
 Lists files and directories by path. The path must be ends with '/', ex. smb://10.0.0.2/sharefolder/directory/
 ```
-samba.list(path, success, error)
+samba.listFiles(path, success, error)
 ```
 
-Reads content by path and return byte[]:
+Reads content by path:
 ```
-samba.read(path, success, error)
+samba.readAsText(path, success, error)
+samba.readAsByteArray(path, success, error)
 ```
 
 Uploads local file to smb server:
@@ -43,5 +44,20 @@ samba.mkdir(path, success, error)
 
 Deletes file or directory:
 ```
-samba.delete(ath, success, error)
+samba.delete(path, success, error)
+```
+
+Open media (video or audio):
+```
+samba.openMedia(path, success, error)
+```
+
+Open file with native app:
+```
+samba.openFile(path, success, error)
+```
+
+Wake the server on lan by MAC address:
+```
+samba.wakeOnLan(mac, success, error)
 ```
