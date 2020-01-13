@@ -7,13 +7,18 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
+import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,14 +29,20 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
 
     // Accepts external data source
     public static MediaDataSource dataSource;
+    public static final boolean DEBUG = false;
 
     // Layout views
     private RelativeLayout mainLayout;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
+    private ProgressBar loading;
+    private TableLayout controls;
+    private ImageButton playBtn;
     private SeekBar seekBar;
     private TextView position;
     private TextView duration;
+    private int playImageResId;
+    private int pauseImageResId;
 
     // Media player variables
     private MediaPlayer mediaPlayer;
@@ -42,9 +53,9 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
     private Runnable updateProgress = new Runnable() {
         @Override
         public void run() {
-            int currentPosition = mediaPlayer.getCurrentPosition();
-            seekBar.setProgress(currentPosition);
-            position.setText(formatDuration(currentPosition));
+            int pos = mediaPlayer.getCurrentPosition();
+            seekBar.setProgress(pos);
+            position.setText(formatDuration(pos));
             updateProgressHandler.postDelayed(this, 100);
         }
     };
@@ -56,7 +67,7 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        console("Activity onCreate");
+        debug("Activity onCreate");
         initLayoutView();
 
         mediaPlayer = new MediaPlayer();
@@ -69,7 +80,7 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
     @Override
     protected void onPause() {
         super.onPause();
-        console("Activity onPause");
+        debug("Activity onPause");
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             restartOnResume = true;
@@ -81,7 +92,7 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
     @Override
     public void onResume() {
         super.onResume();
-        console("Activity onResume");
+        debug("Activity onResume");
         if (restartOnResume) {
             mediaPlayer.start();
         }
@@ -90,12 +101,10 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        console("Activity onDestroy");
+        debug("Activity onDestroy");
         updateProgressHandler.removeCallbacks(updateProgress);
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-        }
+        mediaPlayer.stop();
+        mediaPlayer.release();
     }
 
     /**
@@ -106,21 +115,19 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
         String message = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
             ? "屏幕设置为：横屏" : "屏幕设置为：竖屏";
-        console(message);
+        debug(message);
         adjustViewSize();
-        // surfaceHolder.setSizeFromLayout();
     }
 
     ///////////////////////////////////////////////////////
-    // SurfaceView override methods
+    // SurfaceHolder callback methods
     ///////////////////////////////////////////////////////
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        console("surfaceCreated");
+        debug("surfaceCreated");
         mediaPlayer.setDisplay(surfaceHolder);
     }
 
@@ -129,9 +136,7 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        console("surfaceChanged: " + format + "{" + width + "," + height + "}");
-        adjustViewSize();
-        // surfaceView.requestLayout();
+        debug("surfaceChanged: " + format + " | " + width + ", " + height);
     }
 
     /**
@@ -139,20 +144,8 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        console("surfaceDestroyed");
+        debug("surfaceDestroyed");
         mediaPlayer.setDisplay(null);
-    }
-
-    ///////////////////////////////////////////////////////
-    // Layout widget events
-    ///////////////////////////////////////////////////////
-
-    public void onPlayOrPause(View v) {
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-        } else {
-            mediaPlayer.start();
-        }
     }
 
     ///////////////////////////////////////////////////////
@@ -166,77 +159,132 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
 
         mainLayout = (RelativeLayout) findViewById(res.getIdentifier("main_layout", "id", pkg));
         surfaceView = (SurfaceView) findViewById(res.getIdentifier("video_view", "id", pkg));
+        loading = (ProgressBar) findViewById(res.getIdentifier("progress_bar", "id", pkg));
+        controls = (TableLayout) findViewById(res.getIdentifier("controls", "id", pkg));
+        playBtn = (ImageButton) findViewById(res.getIdentifier("play_or_pause", "id", pkg));
         seekBar = (SeekBar) findViewById(res.getIdentifier("seek_bar", "id", pkg));
         position = (TextView) findViewById(res.getIdentifier("position", "id", pkg));
         duration = (TextView) findViewById(res.getIdentifier("duration", "id", pkg));
+        playImageResId = res.getIdentifier("play", "drawable", pkg);
+        pauseImageResId = res.getIdentifier("pause", "drawable", pkg);
 
         surfaceHolder = surfaceView.getHolder();
-        // surfaceHolder.setSizeFromLayout();
         surfaceHolder.addCallback(this);
+
+        // loading.bringToFront();
+        // loading.invalidate();
+
+        playBtn.setImageResource(playImageResId);
+        playBtn.setVisibility(View.INVISIBLE);
+        controls.setVisibility(View.INVISIBLE);
     }
 
     private void initMediaPlayerListener() {
+        // MediaPlayer events
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
                 seekBar.setMax(mediaPlayer.getDuration());
                 duration.setText(formatDuration(mediaPlayer.getDuration()));
                 mediaPlayer.start();
+                playBtn.setImageResource(pauseImageResId);
                 updateProgressHandler.post(updateProgress);
+                loading.setVisibility(View.INVISIBLE);
             }
         });
         mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
             @Override
-            public void onSeekComplete(MediaPlayer mediaPlayer) {}
+            public void onSeekComplete(MediaPlayer mediaPlayer) {
+                loading.setVisibility(View.INVISIBLE);
+            }
         });
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {}
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                playBtn.setImageResource(playImageResId);
+                playBtn.setVisibility(View.VISIBLE);
+                controls.setVisibility(View.VISIBLE);
+            }
         });
         mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
                 console("Media player error.");
+                mediaPlayer.reset();
                 return false;
             }
         });
         mediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
             @Override
             public void onVideoSizeChanged(MediaPlayer mediaPlayer, int width, int height) {
+                debug("VideoSizeChanged: " + width + ", " + height);
                 adjustViewSize();
             }
         });
 
+        // SeekBar events
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int value = 0;
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                value = progress;
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                mediaPlayer.seekTo(value);
-                position.setText(formatDuration(value));
-            }
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                int value = seekBar.getProgress();
+                mediaPlayer.seekTo(value);
+                position.setText(formatDuration(value));
+                loading.setVisibility(View.VISIBLE);
+                playBtn.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        // Toggle show/hide controls
+        mainLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent e) {
+                if (e.getAction() == MotionEvent.ACTION_UP) {
+                    if (controls.getVisibility() == View.INVISIBLE) {
+                        playBtn.setVisibility(View.VISIBLE);
+                        controls.setVisibility(View.VISIBLE);
+                    } else {
+                        playBtn.setVisibility(View.INVISIBLE);
+                        controls.setVisibility(View.INVISIBLE);
+                    }
+                }
+                return true;
+            }
+        });
+
+        // Toggle play/pause event
+        playBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    playBtn.setImageResource(playImageResId);
+                } else {
+                    mediaPlayer.start();
+                    playBtn.setImageResource(pauseImageResId);
+                }
+            }
         });
     }
 
     private void adjustViewSize() {
-        int viewWidth = mainLayout.getWidth();
-        int viewHeight = mainLayout.getHeight();
+        WindowManager wm = getWindowManager();
+        int screenWidth = wm.getDefaultDisplay().getWidth();
+        int screenHeight = wm.getDefaultDisplay().getHeight();
         int videoWidth = mediaPlayer.getVideoWidth();
         int videoHeight = mediaPlayer.getVideoHeight();
         double videoRatio = (float) videoWidth / videoHeight;
-        double displayRatio = (float) viewWidth / viewHeight;
+        double screenRatio = (float) screenWidth / screenHeight;
 
         ViewGroup.LayoutParams lp = surfaceView.getLayoutParams();
-        if (videoRatio > displayRatio) {
-            lp.width = viewWidth;
+        if (videoRatio > screenRatio) {
+            lp.width = screenWidth;
             lp.height = (int)((double)lp.width / videoRatio);
         } else {
-            lp.height = viewHeight;
+            lp.height = screenHeight;
             lp.width = (int)((double)lp.height * videoRatio);
         }
         surfaceView.setLayoutParams(lp);
@@ -257,6 +305,10 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
             return hours + ":" + m + ":" + s;
         }
         return m + ":" + s;
+    }
+
+    private void debug(String text) {
+        if (DEBUG) console(text);
     }
 
     private void console(String text) {
