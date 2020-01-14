@@ -1,6 +1,7 @@
-package net.cloudseat.cordova;
+package net.cloudseat.smbova;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.media.MediaDataSource;
 import android.media.MediaPlayer;
 
@@ -22,10 +23,9 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.content.res.Configuration;
-import android.content.res.Resources;
+import net.cloudseat.smbova.R;
 
-public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callback {
+public class MediaPlayerActivity extends Activity {
 
     // Accepts external data source
     public static MediaDataSource dataSource;
@@ -33,16 +33,15 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
 
     // Layout views
     private RelativeLayout mainLayout;
+    private ProgressBar loading;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
-    private ProgressBar loading;
     private TableLayout controls;
     private ImageButton playBtn;
+    private ImageButton fullscreenBtn;
     private SeekBar seekBar;
     private TextView position;
     private TextView duration;
-    private int playImageResId;
-    private int pauseImageResId;
 
     // Media player variables
     private MediaPlayer mediaPlayer;
@@ -122,59 +121,52 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
     }
 
     ///////////////////////////////////////////////////////
-    // SurfaceHolder callback methods
-    ///////////////////////////////////////////////////////
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        debug("surfaceCreated");
-        mediaPlayer.setDisplay(surfaceHolder);
-    }
-
-    /**
-     * SurfaceView 尺寸变化时触发
-     */
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        debug("surfaceChanged: " + format + " | " + width + ", " + height);
-    }
-
-    /**
-     * SurfaceView 销毁时触发
-     */
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        debug("surfaceDestroyed");
-        mediaPlayer.setDisplay(null);
-    }
-
-    ///////////////////////////////////////////////////////
     // Private methods
     ///////////////////////////////////////////////////////
 
+    /**
+     * or: setContentView(getResources().getIdentifier("media_player", "layout", getPackageName()));
+     * or: findViewById(getResources().getIdentifier("id_in_xml", "id", getPackageName()));
+     */
     private void initLayoutView() {
-        Resources res = getApplication().getResources();
-        String pkg = getApplication().getPackageName();
-        setContentView(res.getIdentifier("media_layout", "layout", pkg));
-
-        mainLayout = (RelativeLayout) findViewById(res.getIdentifier("main_layout", "id", pkg));
-        surfaceView = (SurfaceView) findViewById(res.getIdentifier("video_view", "id", pkg));
-        loading = (ProgressBar) findViewById(res.getIdentifier("progress_bar", "id", pkg));
-        controls = (TableLayout) findViewById(res.getIdentifier("controls", "id", pkg));
-        playBtn = (ImageButton) findViewById(res.getIdentifier("play_or_pause", "id", pkg));
-        seekBar = (SeekBar) findViewById(res.getIdentifier("seek_bar", "id", pkg));
-        position = (TextView) findViewById(res.getIdentifier("position", "id", pkg));
-        duration = (TextView) findViewById(res.getIdentifier("duration", "id", pkg));
-        playImageResId = res.getIdentifier("play", "drawable", pkg);
-        pauseImageResId = res.getIdentifier("pause", "drawable", pkg);
+        setContentView(R.layout.media_player);
+        mainLayout = (RelativeLayout) findViewById(R.id.main_layout);
+        loading = (ProgressBar) findViewById(R.id.loading);
+        surfaceView = (SurfaceView) findViewById(R.id.video_view);
+        controls = (TableLayout) findViewById(R.id.controls);
+        playBtn = (ImageButton) findViewById(R.id.play_btn);
+        fullscreenBtn = (ImageButton) findViewById(R.id.fullscreen_btn);
+        seekBar = (SeekBar) findViewById(R.id.seek_bar);
+        position = (TextView) findViewById(R.id.position);
+        duration = (TextView) findViewById(R.id.duration);
 
         surfaceHolder = surfaceView.getHolder();
-        surfaceHolder.addCallback(this);
+        surfaceHolder.addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                debug("surfaceCreated");
+                mediaPlayer.setDisplay(surfaceHolder);
+            }
 
-        // loading.bringToFront();
-        // loading.invalidate();
+            /**
+             * SurfaceView 尺寸变化时触发
+             */
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                debug("surfaceChanged: " + format + " | " + width + ", " + height);
+            }
 
-        playBtn.setImageResource(playImageResId);
+            /**
+             * SurfaceView 销毁时触发
+             */
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                debug("surfaceDestroyed");
+                mediaPlayer.setDisplay(null);
+            }
+        });
+
+        playBtn.setImageResource(R.drawable.play);
         playBtn.setVisibility(View.INVISIBLE);
         controls.setVisibility(View.INVISIBLE);
     }
@@ -187,7 +179,7 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
                 seekBar.setMax(mediaPlayer.getDuration());
                 duration.setText(formatDuration(mediaPlayer.getDuration()));
                 mediaPlayer.start();
-                playBtn.setImageResource(pauseImageResId);
+                playBtn.setImageResource(R.drawable.pause);
                 updateProgressHandler.post(updateProgress);
                 loading.setVisibility(View.INVISIBLE);
             }
@@ -201,7 +193,7 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
-                playBtn.setImageResource(playImageResId);
+                playBtn.setImageResource(R.drawable.play);
                 playBtn.setVisibility(View.VISIBLE);
                 controls.setVisibility(View.VISIBLE);
             }
@@ -261,10 +253,10 @@ public class MediaPlayerActivity extends Activity implements SurfaceHolder.Callb
             public void onClick(View v) {
                 if (mediaPlayer.isPlaying()) {
                     mediaPlayer.pause();
-                    playBtn.setImageResource(playImageResId);
+                    playBtn.setImageResource(R.drawable.play);
                 } else {
                     mediaPlayer.start();
-                    playBtn.setImageResource(pauseImageResId);
+                    playBtn.setImageResource(R.drawable.pause);
                 }
             }
         });
