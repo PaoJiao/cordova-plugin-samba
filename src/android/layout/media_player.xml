@@ -4,11 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-    tools:context="net.cloudseat.cordova.MediaPlayerActivity"
-    android:id="@+id/main_layout">
+    tools:context=".MediaPlayerActivity"
+    android:id="@+id/main_layout" >
 
     <ProgressBar
-        android:id="@+id/progress_bar"
+        android:id="@+id/loading"
         style="@android:style/Widget.Holo.ProgressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -21,14 +21,6 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true" />
 
-    <ImageButton
-        android:id="@+id/play_or_pause"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_centerInParent="true"
-        android:background="@android:color/transparent"
-        android:scaleType="centerInside" />
-
     <TableLayout
         android:id="@+id/controls"
         android:layout_width="match_parent"
@@ -37,9 +29,16 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="5dp"
-        android:stretchColumns="1">
+        android:stretchColumns="2">
 
         <TableRow android:gravity="center">
+            <ImageButton
+                android:id="@+id/play_btn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@android:color/transparent"
+                android:scaleType="centerInside" />
+
             <TextView
                 android:id="@+id/position"
                 android:layout_width="wrap_content"
@@ -47,7 +46,7 @@
                 android:textColor="#ffffff"
                 android:text="00:00:00" />
 
-             <SeekBar
+            <SeekBar
                 android:id="@+id/seek_bar"
                 style="@android:style/Widget.DeviceDefault.SeekBar"
                 android:layout_width="match_parent"
@@ -65,6 +64,14 @@
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
                 android:text="00:00:00" />
+
+            <ImageButton
+                android:id="@+id/fullscreen_btn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="#996633"
+                android:scaleType="centerInside" />
+
         </TableRow>
     </TableLayout>
 

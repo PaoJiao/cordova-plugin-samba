@@ -21,7 +21,7 @@
  * @link https://www.cloudseat.net
  */
 
-package net.cloudseat.cordova;
+package net.cloudseat.smbova;
 
 import android.content.Context;
 import android.content.Intent;

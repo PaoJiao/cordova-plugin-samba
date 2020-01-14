@@ -7,11 +7,12 @@
   </js-module>
 
   <platform name="android">
-    <source-file src="src/android/SambaPlugin.java" target-dir="src/net/cloudseat/cordova"/>
-    <source-file src="src/android/SambaAdapter.java" target-dir="src/net/cloudseat/cordova"/>
-    <source-file src="src/android/MediaPlayerActivity.java" target-dir="src/net/cloudseat/cordova"/>
-    <source-file src="src/android/NativePath.java" target-dir="src/net/cloudseat/cordova"/>
-    <source-file src="src/android/WakeOnLan.java" target-dir="src/net/cloudseat/cordova"/>
+    <source-file src="src/android/SambaPlugin.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/SambaAdapter.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/MediaPlayerActivity.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/NativePath.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/WakeOnLan.java" target-dir="src/net/cloudseat/smbova"/>
+
     <source-file src="src/android/bmds/BmdsLog.java" target-dir="src/com/greatape/bmds"/>
     <source-file src="src/android/bmds/BufferedDataSource.java" target-dir="src/com/greatape/bmds"/>
     <source-file src="src/android/bmds/BufferedMediaDataSource.java" target-dir="src/com/greatape/bmds"/>
@@ -23,18 +24,18 @@
     <source-file src="src/android/bmds/ReadStats.java" target-dir="src/com/greatape/bmds"/>
     <source-file src="src/android/libs/jcifs-1.3.19.jar" target-dir="libs" />
 
-    <source-file src="src/android/layout/media_layout.xml" target-dir="res/layout" />
+    <source-file src="src/android/layout/media_player.xml" target-dir="res/layout" />
     <source-file src="src/android/res/play.png" target-dir="res/drawable" />
     <source-file src="src/android/res/pause.png" target-dir="res/drawable" />
 
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="SambaPlugin">
-        <param name="android-package" value="net.cloudseat.cordova.SambaPlugin"/>
+        <param name="android-package" value="net.cloudseat.smbova.SambaPlugin"/>
       </feature>
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <activity android:name="net.cloudseat.cordova.MediaPlayerActivity"
+      <activity android:name="net.cloudseat.smbova.MediaPlayerActivity"
         android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
         android:configChanges="orientation|screenSize"/>
     </config-file>

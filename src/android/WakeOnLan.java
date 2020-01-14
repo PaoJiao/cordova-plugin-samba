@@ -1,4 +1,4 @@
-package net.cloudseat.cordova;
+package net.cloudseat.smbova;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

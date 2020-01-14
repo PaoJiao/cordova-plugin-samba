@@ -1,4 +1,4 @@
-package net.cloudseat.cordova;
+package net.cloudseat.smbova;
 
 import android.content.ContentUris;
 import android.content.Context;
