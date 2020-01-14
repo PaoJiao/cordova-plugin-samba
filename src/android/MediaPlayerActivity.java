@@ -1,23 +1,30 @@
 package net.cloudseat.smbova;
 
 import android.app.Activity;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.res.Configuration;
+
 import android.media.MediaDataSource;
 import android.media.MediaPlayer;
 
 import android.os.Bundle;
 import android.os.Handler;
 
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -27,35 +34,35 @@ import net.cloudseat.smbova.R;
 
 public class MediaPlayerActivity extends Activity {
 
-    // Accepts external data source
+    // 接收外部传来的媒体数据源
     public static MediaDataSource dataSource;
     public static final boolean DEBUG = false;
 
-    // Layout views
-    private RelativeLayout mainLayout;
+    // 布局控件
+    private View mainLayout;
     private ProgressBar loading;
     private SurfaceView surfaceView;
-    private SurfaceHolder surfaceHolder;
     private TableLayout controls;
+    private ImageView audioDisc;
     private ImageButton playBtn;
-    private ImageButton fullscreenBtn;
     private SeekBar seekBar;
     private TextView position;
     private TextView duration;
+    private GestureDetector gestureDetector;
 
-    // Media player variables
+    // 媒体播放器
     private MediaPlayer mediaPlayer;
     private boolean restartOnResume;
 
-    // Update progress in new thread
-    private Handler updateProgressHandler = new Handler();
-    private Runnable updateProgress = new Runnable() {
+    // 每隔 100ms 更新进度条
+    private Handler progressHandler = new Handler();
+    private Runnable progressThread = new Runnable() {
         @Override
         public void run() {
             int pos = mediaPlayer.getCurrentPosition();
             seekBar.setProgress(pos);
             position.setText(formatDuration(pos));
-            updateProgressHandler.postDelayed(this, 100);
+            progressHandler.postDelayed(this, 100);
         }
     };
 
@@ -68,12 +75,7 @@ public class MediaPlayerActivity extends Activity {
         super.onCreate(savedInstanceState);
         debug("Activity onCreate");
         initLayoutView();
-
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setScreenOnWhilePlaying(true);
-        mediaPlayer.setDataSource(dataSource);
-        mediaPlayer.prepareAsync();
-        initMediaPlayerListener();
+        initMediaPlayer();
     }
 
     @Override
@@ -101,9 +103,17 @@ public class MediaPlayerActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         debug("Activity onDestroy");
-        updateProgressHandler.removeCallbacks(updateProgress);
+        progressHandler.removeCallbacks(progressThread);
         mediaPlayer.stop();
         mediaPlayer.release();
+    }
+
+    /**
+     * 如果使用 GestureDetector 处理双击事件就必须重写 Activity 的 onTouchEvent 方法，否则 GestureDetector 中监听的方法都无效
+     */
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        return gestureDetector.onTouchEvent(e);
     }
 
     /**
@@ -125,96 +135,58 @@ public class MediaPlayerActivity extends Activity {
     ///////////////////////////////////////////////////////
 
     /**
+     * 初始化布局控件
      * or: setContentView(getResources().getIdentifier("media_player", "layout", getPackageName()));
      * or: findViewById(getResources().getIdentifier("id_in_xml", "id", getPackageName()));
      */
     private void initLayoutView() {
         setContentView(R.layout.media_player);
-        mainLayout = (RelativeLayout) findViewById(R.id.main_layout);
+        mainLayout = (View) findViewById(R.id.main_layout);
         loading = (ProgressBar) findViewById(R.id.loading);
         surfaceView = (SurfaceView) findViewById(R.id.video_view);
         controls = (TableLayout) findViewById(R.id.controls);
         playBtn = (ImageButton) findViewById(R.id.play_btn);
-        fullscreenBtn = (ImageButton) findViewById(R.id.fullscreen_btn);
         seekBar = (SeekBar) findViewById(R.id.seek_bar);
         position = (TextView) findViewById(R.id.position);
         duration = (TextView) findViewById(R.id.duration);
+        audioDisc = (ImageView) findViewById(R.id.audio_disc);
 
-        surfaceHolder = surfaceView.getHolder();
-        surfaceHolder.addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                debug("surfaceCreated");
-                mediaPlayer.setDisplay(surfaceHolder);
-            }
-
-            /**
-             * SurfaceView 尺寸变化时触发
-             */
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                debug("surfaceChanged: " + format + " | " + width + ", " + height);
-            }
-
-            /**
-             * SurfaceView 销毁时触发
-             */
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-                debug("surfaceDestroyed");
-                mediaPlayer.setDisplay(null);
-            }
-        });
-
-        playBtn.setImageResource(R.drawable.play);
-        playBtn.setVisibility(View.INVISIBLE);
+        // 默认隐藏控件
         controls.setVisibility(View.INVISIBLE);
-    }
+        audioDisc.setVisibility(View.INVISIBLE);
 
-    private void initMediaPlayerListener() {
-        // MediaPlayer events
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        // 使用 GestureDetector 监听单击和双击事件
+        gestureDetector = new GestureDetector(MediaPlayerActivity.this, new GestureDetector.SimpleOnGestureListener() {
             @Override
-            public void onPrepared(MediaPlayer mediaPlayer) {
-                seekBar.setMax(mediaPlayer.getDuration());
-                duration.setText(formatDuration(mediaPlayer.getDuration()));
-                mediaPlayer.start();
-                playBtn.setImageResource(R.drawable.pause);
-                updateProgressHandler.post(updateProgress);
-                loading.setVisibility(View.INVISIBLE);
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                toggleControls();
+                return true; // 必须返回 true，否则双击穿透
             }
-        });
-        mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
             @Override
-            public void onSeekComplete(MediaPlayer mediaPlayer) {
-                loading.setVisibility(View.INVISIBLE);
-            }
-        });
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                playBtn.setImageResource(R.drawable.play);
-                playBtn.setVisibility(View.VISIBLE);
-                controls.setVisibility(View.VISIBLE);
-            }
-        });
-        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
-                console("Media player error.");
-                mediaPlayer.reset();
-                return false;
-            }
-        });
-        mediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
-            @Override
-            public void onVideoSizeChanged(MediaPlayer mediaPlayer, int width, int height) {
-                debug("VideoSizeChanged: " + width + ", " + height);
-                adjustViewSize();
+            public boolean onDoubleTap(MotionEvent e) {
+                togglePlayOrPause();
+                return true;
             }
         });
 
-        // SeekBar events
+        // 主屏幕触摸事件交给 GestureDetector 处理
+        mainLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent e) {
+                return gestureDetector.onTouchEvent(e);
+            }
+        });
+
+        // 播放/暂停按钮点击事件
+        playBtn.setImageResource(R.drawable.play);
+        playBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                togglePlayOrPause();
+            }
+        });
+
+        // 进度条拖动事件
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
@@ -226,42 +198,143 @@ public class MediaPlayerActivity extends Activity {
                 mediaPlayer.seekTo(value);
                 position.setText(formatDuration(value));
                 loading.setVisibility(View.VISIBLE);
-                playBtn.setVisibility(View.INVISIBLE);
+                audioDisc.setVisibility(View.INVISIBLE);
             }
         });
 
-        // Toggle show/hide controls
-        mainLayout.setOnTouchListener(new View.OnTouchListener() {
+        // 设置视频播放容器
+        SurfaceHolder surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.addCallback(new SurfaceHolder.Callback() {
             @Override
-            public boolean onTouch(View v, MotionEvent e) {
-                if (e.getAction() == MotionEvent.ACTION_UP) {
-                    if (controls.getVisibility() == View.INVISIBLE) {
-                        playBtn.setVisibility(View.VISIBLE);
-                        controls.setVisibility(View.VISIBLE);
-                    } else {
-                        playBtn.setVisibility(View.INVISIBLE);
-                        controls.setVisibility(View.INVISIBLE);
-                    }
-                }
-                return true;
+            public void surfaceCreated(SurfaceHolder holder) {
+                debug("surfaceCreated");
+                mediaPlayer.setDisplay(surfaceHolder);
             }
-        });
-
-        // Toggle play/pause event
-        playBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.pause();
-                    playBtn.setImageResource(R.drawable.play);
-                } else {
-                    mediaPlayer.start();
-                    playBtn.setImageResource(R.drawable.pause);
-                }
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                debug("surfaceChanged: " + format + " | " + width + ", " + height);
+            }
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                debug("surfaceDestroyed");
+                mediaPlayer.setDisplay(null);
             }
         });
     }
 
+    /**
+     * 初始化媒体播放器
+     */
+    private void initMediaPlayer() {
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setScreenOnWhilePlaying(true);
+        mediaPlayer.setDataSource(dataSource);
+        mediaPlayer.prepareAsync();
+
+        // 数据预加载完成后回调
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                mediaPlayer.start();
+                progressHandler.post(progressThread);
+
+                loading.setVisibility(View.INVISIBLE);
+                audioDisc.setVisibility(View.VISIBLE);
+                playBtn.setImageResource(R.drawable.pause);
+                seekBar.setMax(mediaPlayer.getDuration());
+                duration.setText(formatDuration(mediaPlayer.getDuration()));
+
+                // 如果媒体类型是音频则显示音频图标
+                MediaPlayer.TrackInfo[] trackInfo = mediaPlayer.getTrackInfo();
+                if (trackInfo[0].getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
+                    initAudioDisc();
+                }
+            }
+        });
+        // 视频尺寸改变后回调
+        mediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
+            @Override
+            public void onVideoSizeChanged(MediaPlayer mediaPlayer, int width, int height) {
+                debug("VideoSizeChanged: " + width + ", " + height);
+                adjustViewSize();
+            }
+        });
+        // 拖动进度寻轨完成后回调
+        mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+            @Override
+            public void onSeekComplete(MediaPlayer mediaPlayer) {
+                loading.setVisibility(View.INVISIBLE);
+                audioDisc.setVisibility(View.VISIBLE);
+            }
+        });
+        // 播放完成后回调
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                playBtn.setImageResource(R.drawable.play);
+            }
+        });
+        // 发生错误时回调
+        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
+                console("Media player error.");
+                mediaPlayer.reset();
+                return false;
+            }
+        });
+    }
+
+    /**
+     * 初始化音频图标旋转动画
+     */
+    private void initAudioDisc() {
+        audioDisc.setImageResource(R.drawable.disc);
+        RotateAnimation rotate = new RotateAnimation(0, 360,
+            Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        rotate.setDuration(3000);
+        rotate.setFillAfter(true); // 结束后停止再最后一帧
+        rotate.setInterpolator(new LinearInterpolator()); // 插值：线性
+        rotate.setRepeatMode(Animation.RESTART); // 重复模式：从头开始
+        rotate.setRepeatCount(Animation.INFINITE); // 重复次数：无限
+        audioDisc.startAnimation(rotate);
+        audioDisc.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * 播放/暂停
+     */
+    private void togglePlayOrPause() {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            playBtn.setImageResource(R.drawable.play);
+        } else {
+            mediaPlayer.start();
+            playBtn.setImageResource(R.drawable.pause);
+        }
+    }
+
+    /**
+     * 显示/隐藏 播放控制面板
+     */
+    private void toggleControls() {
+        if (controls.getVisibility() == View.INVISIBLE) {
+            controls.setAlpha(0f);
+            controls.setVisibility(View.VISIBLE);
+            controls.animate().alpha(1f).setDuration(300).setListener(null);
+        } else {
+            controls.animate().alpha(0f).setDuration(300).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    controls.setVisibility(View.INVISIBLE);
+                }
+            });
+        }
+    }
+
+    /**
+     * 调整视频容器大小以自适应屏幕
+     */
     private void adjustViewSize() {
         WindowManager wm = getWindowManager();
         int screenWidth = wm.getDefaultDisplay().getWidth();
@@ -306,9 +379,5 @@ public class MediaPlayerActivity extends Activity {
     private void console(String text) {
         Toast.makeText(MediaPlayerActivity.this, text, Toast.LENGTH_LONG).show();
     }
-
-    ///////////////////////////////////////////////////////
-    // Inner classes
-    ///////////////////////////////////////////////////////
 
 }

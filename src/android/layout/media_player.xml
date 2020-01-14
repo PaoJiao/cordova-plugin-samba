@@ -15,6 +15,14 @@
         android:layout_centerInParent="true"
         android:elevation="10dp" />
 
+    <ImageView
+        android:id="@+id/audio_disc"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerInParent="true"
+        android:scaleType="centerInside"
+        android:elevation="10dp" />
+
     <SurfaceView
         android:id="@+id/video_view"
         android:layout_width="match_parent"
@@ -28,14 +36,16 @@
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginBottom="5dp"
+        android:layout_marginBottom="10dp"
         android:stretchColumns="2">
 
         <TableRow android:gravity="center">
             <ImageButton
                 android:id="@+id/play_btn"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginRight="5dp"
+                android:padding="5dp"
                 android:background="@android:color/transparent"
                 android:scaleType="centerInside" />
 
@@ -51,8 +61,6 @@
                 style="@android:style/Widget.DeviceDefault.SeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
                 android:maxHeight="2dp"
                 android:minHeight="2dp"
                 android:max="0"
@@ -64,14 +72,6 @@
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
                 android:text="00:00:00" />
-
-            <ImageButton
-                android:id="@+id/fullscreen_btn"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:background="#996633"
-                android:scaleType="centerInside" />
-
         </TableRow>
     </TableLayout>
 

@@ -27,6 +27,7 @@
     <source-file src="src/android/layout/media_player.xml" target-dir="res/layout" />
     <source-file src="src/android/res/play.png" target-dir="res/drawable" />
     <source-file src="src/android/res/pause.png" target-dir="res/drawable" />
+    <source-file src="src/android/res/disc.png" target-dir="res/drawable" />
 
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="SambaPlugin">
