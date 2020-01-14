@@ -261,17 +261,20 @@ public class MediaPlayerActivity extends Activity {
                 seekBar.setMax(mediaPlayer.getDuration());
                 duration.setText(formatDuration(mediaPlayer.getDuration()));
 
-                // 如果媒体类型是音频则显示音频图标
+                // 根据媒体信息或加载字幕或显示音频图标
+                boolean hasVideo = false;
                 MediaPlayer.TrackInfo[] trackInfos = mediaPlayer.getTrackInfo();
                 for (int i = 0; i < trackInfos.length; i++) {
                     MediaPlayer.TrackInfo info = trackInfos[i];
-                    if (i == 0 &&
-                        info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
-                        initAudioDisc();
-                    }
+                    if (info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_VIDEO) {
+                        hasVideo = true;
+                    } else
                     if (info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT) {
                         mediaPlayer.selectTrack(i);
                     }
+                }
+                if (!hasVideo) {
+                    initAudioDisc();
                 }
             }
         });
