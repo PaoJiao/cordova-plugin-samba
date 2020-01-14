@@ -221,6 +221,7 @@ public class SambaPlugin extends CordovaPlugin {
                 try {
                     String path = args.getString(0);
                     MediaPlayerActivity.dataSource = createBufferedMediaDataSource(path);
+                    MediaPlayerActivity.timedTextFile = createTempSubtitleFile(path);
 
                     Intent intent = new Intent(cordova.getActivity(), MediaPlayerActivity.class);
                     cordova.getActivity().startActivity(intent);
@@ -264,6 +265,17 @@ public class SambaPlugin extends CordovaPlugin {
                 return "SmbFile";
             }
         });
+    }
+
+    private String createTempSubtitleFile(String path) throws IOException {
+        int i = path.lastIndexOf("/") + 1;
+        int j = path.lastIndexOf(".");
+        String dir = path.substring(0, i);
+        String name = i > j ? path.substring(i) : path.substring(i, j);
+
+        String expectedSubtitle = dir + name + ".srt";
+        String tempSubtitle = cordova.getActivity().getCacheDir() + "/" + "temp.srt";
+        return samba.download(expectedSubtitle, tempSubtitle);
     }
 
 }

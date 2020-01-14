@@ -1,12 +1,15 @@
 package net.cloudseat.smbova;
 
 import android.app.Activity;
+import android.content.res.Configuration;
+import android.util.TypedValue;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.content.res.Configuration;
 
 import android.media.MediaDataSource;
 import android.media.MediaPlayer;
+import android.media.TimedText;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,12 +33,14 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import net.cloudseat.smbova.R;
 
 public class MediaPlayerActivity extends Activity {
 
     // 接收外部传来的媒体数据源
     public static MediaDataSource dataSource;
+    public static String timedTextFile;
     public static final boolean DEBUG = false;
 
     // 布局控件
@@ -48,6 +53,7 @@ public class MediaPlayerActivity extends Activity {
     private SeekBar seekBar;
     private TextView position;
     private TextView duration;
+    private TextView subtitle;
     private GestureDetector gestureDetector;
 
     // 媒体播放器
@@ -124,10 +130,13 @@ public class MediaPlayerActivity extends Activity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        String message = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
-            ? "屏幕设置为：横屏" : "屏幕设置为：竖屏";
-        debug(message);
         adjustViewSize();
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            subtitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        } else {
+            subtitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        }
     }
 
     ///////////////////////////////////////////////////////
@@ -149,6 +158,7 @@ public class MediaPlayerActivity extends Activity {
         seekBar = (SeekBar) findViewById(R.id.seek_bar);
         position = (TextView) findViewById(R.id.position);
         duration = (TextView) findViewById(R.id.duration);
+        subtitle = (TextView) findViewById(R.id.subtitle);
         audioDisc = (ImageView) findViewById(R.id.audio_disc);
 
         // 默认隐藏控件
@@ -229,8 +239,15 @@ public class MediaPlayerActivity extends Activity {
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setScreenOnWhilePlaying(true);
         mediaPlayer.setDataSource(dataSource);
-        mediaPlayer.prepareAsync();
 
+        try {
+            if (timedTextFile != null)
+            mediaPlayer.addTimedTextSource(timedTextFile, MediaPlayer.MEDIA_MIMETYPE_TEXT_SUBRIP);
+        } catch (IOException e) {
+            console("Load timed text error.");
+        }
+
+        mediaPlayer.prepareAsync();
         // 数据预加载完成后回调
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
@@ -245,9 +262,25 @@ public class MediaPlayerActivity extends Activity {
                 duration.setText(formatDuration(mediaPlayer.getDuration()));
 
                 // 如果媒体类型是音频则显示音频图标
-                MediaPlayer.TrackInfo[] trackInfo = mediaPlayer.getTrackInfo();
-                if (trackInfo[0].getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
-                    initAudioDisc();
+                MediaPlayer.TrackInfo[] trackInfos = mediaPlayer.getTrackInfo();
+                for (int i = 0; i < trackInfos.length; i++) {
+                    MediaPlayer.TrackInfo info = trackInfos[i];
+                    if (info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
+                        initAudioDisc();
+                        return;
+                    }
+                    if (info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT) {
+                        mediaPlayer.selectTrack(i);
+                    }
+                }
+            }
+        });
+        // 字幕同步回调
+        mediaPlayer.setOnTimedTextListener(new MediaPlayer.OnTimedTextListener() {
+            @Override
+            public void onTimedText(MediaPlayer mediaPlayer, TimedText text) {
+                if (text != null) {
+                    subtitle.setText(text.getText());
                 }
             }
         });

@@ -236,18 +236,22 @@ class SambaAdapter {
      * @param String localPath
      * @return
      */
-    public void download(String smbPath, String localPath) throws IOException {
+    public String download(String smbPath, String localPath) throws IOException {
         SmbFile smbFile = new SmbFile(smbPath, auth);
-        InputStream in = smbFile.getInputStream();
-        FileOutputStream out = new FileOutputStream(localPath);
+        if (smbFile.exists()) {
+            InputStream in = smbFile.getInputStream();
+            FileOutputStream out = new FileOutputStream(localPath);
 
-        byte[] b = new byte[BUFFER_SIZE];
-        int len = 0;
-        while((len = in.read(b)) > 0) {
-            out.write(b, 0, len);
+            byte[] b = new byte[BUFFER_SIZE];
+            int len = 0;
+            while((len = in.read(b)) > 0) {
+                out.write(b, 0, len);
+            }
+            in.close();
+            out.close();
+            return localPath;
         }
-        in.close();
-        out.close();
+        return null;
     }
 
     /* ----------------------------------------------------
