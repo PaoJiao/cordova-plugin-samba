@@ -35,8 +35,11 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
 import jcifs.smb.SmbFile;
 import com.greatape.bmds.BufferedMediaDataSource;
 
@@ -250,7 +253,6 @@ public class SambaPlugin extends CordovaPlugin {
 
     private BufferedMediaDataSource createBufferedMediaDataSource(String path) throws IOException {
         SmbFile smbFile = samba.getSmbFileInstance(path);
-
         return new BufferedMediaDataSource(new BufferedMediaDataSource.StreamCreator() {
             @Override
             public InputStream openStream() throws IOException {
@@ -272,10 +274,19 @@ public class SambaPlugin extends CordovaPlugin {
         int j = path.lastIndexOf(".");
         String dir = path.substring(0, i);
         String name = i > j ? path.substring(i) : path.substring(i, j);
-
         String expectedSubtitle = dir + name + ".srt";
         String tempSubtitle = cordova.getActivity().getCacheDir() + "/" + "temp.srt";
-        return samba.download(expectedSubtitle, tempSubtitle);
+
+        try {
+            FileOutputStream fos = new FileOutputStream(tempSubtitle);
+            OutputStreamWriter writer = new OutputStreamWriter(fos, "UTF-8");
+            writer.write(samba.readAsText(expectedSubtitle));
+            writer.flush();
+            writer.close();
+            return tempSubtitle;
+        } catch (IOException e) {
+            return null;
+        }
     }
 
 }

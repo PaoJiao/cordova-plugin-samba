@@ -230,30 +230,6 @@ class SambaAdapter {
         return entry;
     }
 
-    /**
-     * Download remote file to local path
-     * @param String smbPath
-     * @param String localPath
-     * @return
-     */
-    public String download(String smbPath, String localPath) throws IOException {
-        SmbFile smbFile = new SmbFile(smbPath, auth);
-        if (smbFile.exists()) {
-            InputStream in = smbFile.getInputStream();
-            FileOutputStream out = new FileOutputStream(localPath);
-
-            byte[] b = new byte[BUFFER_SIZE];
-            int len = 0;
-            while((len = in.read(b)) > 0) {
-                out.write(b, 0, len);
-            }
-            in.close();
-            out.close();
-            return localPath;
-        }
-        return null;
-    }
-
     /* ----------------------------------------------------
      * Private methods
      * ------------------------------------------------- */

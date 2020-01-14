@@ -265,9 +265,9 @@ public class MediaPlayerActivity extends Activity {
                 MediaPlayer.TrackInfo[] trackInfos = mediaPlayer.getTrackInfo();
                 for (int i = 0; i < trackInfos.length; i++) {
                     MediaPlayer.TrackInfo info = trackInfos[i];
-                    if (info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
+                    if (i == 0 &&
+                        info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
                         initAudioDisc();
-                        return;
                     }
                     if (info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT) {
                         mediaPlayer.selectTrack(i);
