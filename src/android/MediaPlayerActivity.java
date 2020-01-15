@@ -59,15 +59,18 @@ public class MediaPlayerActivity extends Activity {
     // 媒体播放器
     private MediaPlayer mediaPlayer;
     private boolean restartOnResume;
+    private boolean isSeeking;
 
     // 每隔 100ms 更新进度条
     private Handler progressHandler = new Handler();
     private Runnable progressThread = new Runnable() {
         @Override
         public void run() {
-            int pos = mediaPlayer.getCurrentPosition();
-            seekBar.setProgress(pos);
-            position.setText(formatDuration(pos));
+            if (!isSeeking) {
+                int pos = mediaPlayer.getCurrentPosition();
+                seekBar.setProgress(pos);
+                position.setText(formatDuration(pos));
+            }
             progressHandler.postDelayed(this, 100);
         }
     };
@@ -199,14 +202,17 @@ public class MediaPlayerActivity extends Activity {
         // 进度条拖动事件
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                position.setText(formatDuration(progress));
+            }
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                isSeeking = true;
+            }
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                int value = seekBar.getProgress();
-                mediaPlayer.seekTo(value);
-                position.setText(formatDuration(value));
+                isSeeking = false;
+                mediaPlayer.seekTo(seekBar.getProgress());
                 loading.setVisibility(View.VISIBLE);
                 audioDisc.setVisibility(View.INVISIBLE);
             }
@@ -282,9 +288,16 @@ public class MediaPlayerActivity extends Activity {
         mediaPlayer.setOnTimedTextListener(new MediaPlayer.OnTimedTextListener() {
             @Override
             public void onTimedText(MediaPlayer mediaPlayer, TimedText text) {
+                String textString = "";
                 if (text != null) {
-                    subtitle.setText(text.getText());
+                    try {
+                        byte[] bytes = text.getText().getBytes("GBK");
+                        textString = new String(bytes, "utf-8");
+                    } catch (Exception e) {
+                        textString = text.getText();
+                    }
                 }
+                subtitle.setText(textString);
             }
         });
         // 视频尺寸改变后回调
