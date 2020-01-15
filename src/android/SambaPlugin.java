@@ -223,8 +223,13 @@ public class SambaPlugin extends CordovaPlugin {
             @Override
             public void run() {
                 try {
-                    ImageViewerActivity.smbPath = args.getString(0);
-                    ImageViewerActivity.samba = samba;
+                    String path = args.getString(0);
+                    ImageViewerActivity.imageCreator = new ImageViewerActivity.ImageCreator() {
+                        @Override
+                        public byte[] getByteArray() throws IOException {
+                            return samba.readAsByteArray(path);
+                        }
+                    };
 
                     Intent intent = new Intent(cordova.getActivity(), ImageViewerActivity.class);
                     cordova.getActivity().startActivity(intent);
