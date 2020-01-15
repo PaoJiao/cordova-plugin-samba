@@ -71,6 +71,7 @@ public class SambaPlugin extends CordovaPlugin {
             case "mkfile": mkfile(args, callback); break;
             case "mkdir": mkdir(args, callback); break;
             case "delete": delete(args, callback); break;
+            case "openImage": openImage(args, callback); break;
             case "openMedia": openMedia(args, callback); break;
             case "openFile": openFile(args, callback); break;
             case "wakeOnLan": wakeOnLan(args, callback); break;
@@ -210,6 +211,24 @@ public class SambaPlugin extends CordovaPlugin {
                     cordova.getActivity().startActivity(intent);
 
                     callback.success(mimeType);
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void openImage(CordovaArgs args, CallbackContext callback) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ImageViewerActivity.smbPath = args.getString(0);
+                    ImageViewerActivity.samba = samba;
+
+                    Intent intent = new Intent(cordova.getActivity(), ImageViewerActivity.class);
+                    cordova.getActivity().startActivity(intent);
+                    callback.success();
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }

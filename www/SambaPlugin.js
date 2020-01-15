@@ -17,6 +17,10 @@ module.exports = {
     exec(success, error, 'SambaPlugin', 'readAsByteArray', [ path ])
   },
 
+  openImage(path, success, error) {
+    exec(success, error, 'SambaPlugin', 'openImage', [ path ])
+  },
+
   openMedia(path, success, error) {
     exec(success, error, 'SambaPlugin', 'openMedia', [ path ])
   },

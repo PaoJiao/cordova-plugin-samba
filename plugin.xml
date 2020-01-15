@@ -9,9 +9,11 @@
   <platform name="android">
     <source-file src="src/android/SambaPlugin.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/SambaAdapter.java" target-dir="src/net/cloudseat/smbova"/>
-    <source-file src="src/android/MediaPlayerActivity.java" target-dir="src/net/cloudseat/smbova"/>
-    <source-file src="src/android/NativePath.java" target-dir="src/net/cloudseat/smbova"/>
-    <source-file src="src/android/WakeOnLan.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/imageview/PinchImageView.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/imageview/ImageViewerActivity.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/mediaplay/MediaPlayerActivity.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/util/NativePath.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/util/WakeOnLan.java" target-dir="src/net/cloudseat/smbova"/>
 
     <source-file src="src/android/bmds/BmdsLog.java" target-dir="src/com/greatape/bmds"/>
     <source-file src="src/android/bmds/BufferedDataSource.java" target-dir="src/com/greatape/bmds"/>
@@ -22,8 +24,9 @@
     <source-file src="src/android/bmds/LoadRunnerClient.java" target-dir="src/com/greatape/bmds"/>
     <source-file src="src/android/bmds/MediaCache.java" target-dir="src/com/greatape/bmds"/>
     <source-file src="src/android/bmds/ReadStats.java" target-dir="src/com/greatape/bmds"/>
-    <source-file src="src/android/libs/jcifs-1.3.19.jar" target-dir="libs" />
 
+    <source-file src="src/android/res/libs/jcifs-1.3.19.jar" target-dir="libs" />
+    <source-file src="src/android/res/layout/image_viewer.xml" target-dir="res/layout" />
     <source-file src="src/android/res/layout/media_player.xml" target-dir="res/layout" />
     <source-file src="src/android/res/drawable/play.png" target-dir="res/drawable" />
     <source-file src="src/android/res/drawable/pause.png" target-dir="res/drawable" />
@@ -36,6 +39,9 @@
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <activity android:name="net.cloudseat.smbova.ImageViewerActivity"
+        android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
+
       <activity android:name="net.cloudseat.smbova.MediaPlayerActivity"
         android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
         android:configChanges="orientation|screenSize"/>
