@@ -29,9 +29,9 @@ public class ImageViewerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.image_viewer);
-        imageView = (ImageView) findViewById(R.id.image_view);
-        loading = (ProgressBar) findViewById(R.id.image_loading);
 
+        imageView = (ImageView) findViewById(R.id.image_view);
+        loading = (ProgressBar) findViewById(R.id.loading);
         new BitmapCreateTask().execute(imageCreator);
     }
 

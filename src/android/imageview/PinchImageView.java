@@ -33,7 +33,7 @@ public class PinchImageView extends ImageView  {
     public static final float FLING_DAMPING_FACTOR = 0.9f;
 
     // 图片最大放大比例
-    private static final float MAX_SCALE = 4f;
+    private static final float MAX_SCALE = 3f;
 
     ////////////////////////////////监听器////////////////////////////////
 
