@@ -47,6 +47,11 @@ Deletes file or directory:
 samba.delete(path, success, error)
 ```
 
+Open image:
+```
+samba.openImage(path, success, error)
+```
+
 Open media (video or audio):
 ```
 samba.openMedia(path, success, error)
