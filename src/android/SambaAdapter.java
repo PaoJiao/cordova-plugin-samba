@@ -246,12 +246,11 @@ class SambaAdapter {
             if (type != SmbFile.TYPE_FILESYSTEM && type != SmbFile.TYPE_SHARE) {
                 continue;
             }
-            String name = parseName(file.getName());
-            if (name.endsWith("$")) {
+            if (file.getName().endsWith("$/")) {
                 continue;
             }
             JSONObject entry = new JSONObject();
-            entry.put("name", name);
+            entry.put("name", parseName(file.getName()));
             entry.put("type", parseType(file));
             entry.put("path", file.getPath());
             entry.put("size", file.length());
