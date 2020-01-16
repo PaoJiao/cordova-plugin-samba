@@ -40,7 +40,8 @@
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
       <activity android:name="net.cloudseat.smbova.ImageViewerActivity"
-        android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
+        android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
+        android:configChanges="orientation|screenSize"/>
 
       <activity android:name="net.cloudseat.smbova.MediaPlayerActivity"
         android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
