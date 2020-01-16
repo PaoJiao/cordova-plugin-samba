@@ -25,7 +25,9 @@ package net.cloudseat.smbova;
 
 import android.content.Context;
 import android.content.Intent;
+
 import android.net.Uri;
+import android.os.Environment;
 import android.webkit.MimeTypeMap;
 
 import org.apache.cordova.CallbackContext;
@@ -40,15 +42,12 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-import jcifs.smb.SmbFile;
 import com.greatape.bmds.BufferedMediaDataSource;
 
 /**
  * Plugin Main Class
  */
 public class SambaPlugin extends CordovaPlugin {
-
-    private static final SambaAdapter samba = new SambaAdapter();
 
     /**
      * Plugin main method
@@ -61,19 +60,20 @@ public class SambaPlugin extends CordovaPlugin {
             case "auth":
                 String username = args.getString(0);
                 String password = args.getString(1);
-                samba.setPrincipal(username, password);
+                SambaFile.setPrincipal(username, password);
                 callback.success();
                 break;
-            case "listFiles": listFiles(args, callback); break;
+            case "listEntries": listEntries(args, callback); break;
             case "readAsText": readAsText(args, callback); break;
             case "readAsByteArray": readAsByteArray(args, callback); break;
-            case "upload": upload(args, callback); break;
-            case "mkfile": mkfile(args, callback); break;
-            case "mkdir": mkdir(args, callback); break;
-            case "delete": delete(args, callback); break;
             case "openImage": openImage(args, callback); break;
             case "openMedia": openMedia(args, callback); break;
             case "openFile": openFile(args, callback); break;
+            case "upload": upload(args, callback); break;
+            case "download": download(args, callback); break;
+            case "createFile": createFile(args, callback); break;
+            case "createDirectory": createDirectory(args, callback); break;
+            case "delete": delete(args, callback); break;
             case "wakeOnLan": wakeOnLan(args, callback); break;
             default:
                 callback.error("Undefined method:" + action);
@@ -82,13 +82,13 @@ public class SambaPlugin extends CordovaPlugin {
         return true;
     }
 
-    private void listFiles(CordovaArgs args, CallbackContext callback) {
+    private void listEntries(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String path = args.getString(0);
-                    callback.success(samba.listFiles(path));
+                    SambaFile file = new SambaFile(args.getString(0));
+                    callback.success(file.listEntries());
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
@@ -101,8 +101,8 @@ public class SambaPlugin extends CordovaPlugin {
             @Override
             public void run() {
                 try {
-                    String path = args.getString(0);
-                    callback.success(samba.readAsText(path));
+                    SambaFile file = new SambaFile(args.getString(0));
+                    callback.success(file.readAsText());
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
@@ -115,8 +115,8 @@ public class SambaPlugin extends CordovaPlugin {
             @Override
             public void run() {
                 try {
-                    String path = args.getString(0);
-                    callback.success(samba.readAsByteArray(path));
+                    SambaFile file = new SambaFile(args.getString(0));
+                    callback.success(file.readAsByteArray());
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
@@ -124,13 +124,13 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
-    private void mkfile(CordovaArgs args, CallbackContext callback) {
+    private void createFile(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String path = args.getString(0);
-                    callback.success(samba.mkfile(path));
+                    SambaFile file = new SambaFile(args.getString(0));
+                    callback.success(file.createFile());
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
@@ -138,13 +138,13 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
-    private void mkdir(CordovaArgs args, CallbackContext callback) {
+    private void createDirectory(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String path = args.getString(0);
-                    callback.success(samba.mkdir(path));
+                    SambaFile file = new SambaFile(args.getString(0));
+                    callback.success(file.createDirectory());
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
@@ -157,8 +157,8 @@ public class SambaPlugin extends CordovaPlugin {
             @Override
             public void run() {
                 try {
-                    String path = args.getString(0);
-                    samba.delete(path);
+                    SambaFile file = new SambaFile(args.getString(0));
+                    file.delete();
                     callback.success();
                 } catch (Exception e) {
                     callback.error(e.getMessage());
@@ -175,19 +175,46 @@ public class SambaPlugin extends CordovaPlugin {
                     String localPath = args.getString(0);
                     String smbPath = args.getString(1);
 
+                    // 将路径解析为本地原生路径
                     Context context = cordova.getActivity().getApplicationContext();
                     String nativePath = NativePath.parse(context, localPath);
-
+                    // 获取要上传文件的文件名
                     int index = nativePath.lastIndexOf("/");
                     String fileName = nativePath.substring(index + 1);
 
-                    JSONObject result = samba.upload(nativePath, smbPath + fileName, new Callback() {
+                    SambaFile smbFile = new SambaFile(smbPath + fileName);
+                    JSONObject result = smbFile.upload(nativePath, new TransferCallback() {
                         @Override
                         public void onProgress(float progress) {
                             webView.sendJavascript("window.samba.onUpload(" + progress + ")");
                         }
                     });
                     callback.success(result);
+                } catch (Exception e) {
+                    callback.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void download(CordovaArgs args, CallbackContext callback) throws JSONException {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String smbPath = args.getString(0);
+                    String fileName = smbPath.substring(smbPath.lastIndexOf("/"));
+
+                    SambaFile smbFile = new SambaFile(smbPath);
+                    String localPath = getExternalStoragePath(smbFile.getGroupType()) + fileName;
+
+                    smbFile.download(localPath, new TransferCallback() {
+                        @Override
+                        public void onProgress(float progress) {
+                            webView.sendJavascript("window.samba.onDownload(" + progress + ")");
+                        }
+                    });
+                    callback.success(localPath);
                 } catch (Exception e) {
                     callback.error(e.getMessage());
                 }
@@ -223,11 +250,11 @@ public class SambaPlugin extends CordovaPlugin {
             @Override
             public void run() {
                 try {
-                    String path = args.getString(0);
+                    SambaFile file = new SambaFile(args.getString(0));
                     ImageViewerActivity.imageCreator = new ImageViewerActivity.ImageCreator() {
                         @Override
                         public byte[] getByteArray() throws IOException {
-                            return samba.readAsByteArray(path);
+                            return file.readAsByteArray();
                         }
                     };
 
@@ -275,16 +302,32 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    private String getExternalStoragePath(int groupType) {
+        String externalStoragePath = "";
+        if (groupType == SambaFile.GROUP_IMAGE) {
+            externalStoragePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+        } else
+        if (groupType == SambaFile.GROUP_AUDIO) {
+            externalStoragePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).toString();
+        } else {
+        if (groupType == SambaFile.GROUP_VIDEO) {
+            externalStoragePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).toString();
+        } else
+            externalStoragePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+        }
+        return externalStoragePath;
+    }
+
     private BufferedMediaDataSource createBufferedMediaDataSource(String path) throws IOException {
-        SmbFile smbFile = samba.getSmbFileInstance(path);
+        SambaFile file = new SambaFile(path);
         return new BufferedMediaDataSource(new BufferedMediaDataSource.StreamCreator() {
             @Override
             public InputStream openStream() throws IOException {
-                return smbFile.getInputStream();
+                return file.getInputStream();
             }
             @Override
             public long length() throws IOException {
-                return smbFile.length();
+                return file.length();
             }
             @Override
             public String typeName() {
@@ -293,6 +336,10 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 根据视频文件名获取当前目录下同名字幕文件
+     * 如果存在则复制到当前应用的缓存目录
+     */
     private String createTempSubtitleFile(String path) throws IOException {
         int i = path.lastIndexOf("/") + 1;
         int j = path.lastIndexOf(".");
@@ -304,7 +351,8 @@ public class SambaPlugin extends CordovaPlugin {
         try {
             FileOutputStream fos = new FileOutputStream(tempSubtitle);
             OutputStreamWriter writer = new OutputStreamWriter(fos, "UTF-8");
-            writer.write(samba.readAsText(expectedSubtitle));
+            SambaFile file = new SambaFile(expectedSubtitle);
+            writer.write(file.readAsText());
             writer.flush();
             writer.close();
             return tempSubtitle;

@@ -8,7 +8,7 @@
 
   <platform name="android">
     <source-file src="src/android/SambaPlugin.java" target-dir="src/net/cloudseat/smbova"/>
-    <source-file src="src/android/SambaAdapter.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/SambaFile.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/imageview/PinchImageView.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/imageview/ImageViewerActivity.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/mediaplay/MediaPlayerActivity.java" target-dir="src/net/cloudseat/smbova"/>
@@ -50,6 +50,7 @@
 
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.INTERNET" />
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     </config-file>
   </platform>
 

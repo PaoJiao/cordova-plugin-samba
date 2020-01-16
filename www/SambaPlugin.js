@@ -5,8 +5,8 @@ module.exports = {
     exec(success, error, 'SambaPlugin', 'auth', [ username, password ])
   },
 
-  listFiles(path, success, error) {
-    exec(success, error, 'SambaPlugin', 'listFiles', [ path ])
+  listEntries(path, success, error) {
+    exec(success, error, 'SambaPlugin', 'listEntries', [ path ])
   },
 
   readAsText(path, success, error) {
@@ -33,12 +33,16 @@ module.exports = {
     exec(success, error, 'SambaPlugin', 'upload', [ localPath, smbPath ])
   },
 
-  mkfile(path, success, error) {
-    exec(success, error, 'SambaPlugin', 'mkfile', [ path ])
+  download(smbPath, success, error) {
+    exec(success, error, 'SambaPlugin', 'download', [ smbPath ])
   },
 
-  mkdir(path, success, error) {
-    exec(success, error, 'SambaPlugin', 'mkdir', [ path ])
+  createFile(path, success, error) {
+    exec(success, error, 'SambaPlugin', 'createFile', [ path ])
+  },
+
+  createDirectory(path, success, error) {
+    exec(success, error, 'SambaPlugin', 'createDirectory', [ path ])
   },
 
   delete(path, success, error) {

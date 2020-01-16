@@ -231,7 +231,7 @@ public class NativePath {
         returnCursor.moveToFirst();
         String name = (returnCursor.getString(nameIndex));
         String size = (Long.toString(returnCursor.getLong(sizeIndex)));
-        File   file = new File(context.getCacheDir(),name);
+        File file = new File(context.getCacheDir(),name);
 
         InputStream inputStream = context.getContentResolver().openInputStream(uri);
         FileOutputStream outputStream = new FileOutputStream(file);

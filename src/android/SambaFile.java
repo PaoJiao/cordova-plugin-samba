@@ -1,5 +1,5 @@
 /**
- * Samba Adapter
+ * Samba File
  * Copyright (c) 2019, CLOUDSEAT Inc.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -40,39 +40,34 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-class SambaAdapter {
+class SambaFile extends SmbFile {
+
+    public static final int GROUP_IMAGE = 1;
+    public static final int GROUP_AUDIO = 2;
+    public static final int GROUP_VIDEO = 3;
+
+    private static final Map<Integer, String> GROUP_TYPES = new HashMap<Integer, String>() {{
+        put(GROUP_IMAGE, "bmp,cur,eps,gif,ico,jpe,jpg,jpeg,jpz,png,svg,tif,tiff");
+        put(GROUP_AUDIO, "aac,aiff,ape,caf,flac,m3u,m4a,mp3,ogg,wav,wma");
+        put(GROUP_VIDEO, "3gp,asf,avi,flv,m3u8,m4u,m4v,mkv,mov,mp4,mpa,mpe,mpeg,mpg,ogm,rm,rmvb,vob,webm,wmv");
+    }};
 
     private static final int BUFFER_SIZE = 8192;
-    private NtlmPasswordAuthentication auth;
+    private static NtlmPasswordAuthentication auth;
 
     /**
-     * Get SmbFile instance
+     * 重载构造器
      * @param String path
-     * @return SmbFile
      */
-    public SmbFile getSmbFileInstance(String path) throws IOException {
-        return new SmbFile(path, auth);
-    }
-
-    /**
-     * Lists remote directories and files
-     * @param String path
-     * @return JSONArray
-     */
-    public JSONArray listFiles(String path) throws MalformedURLException, SmbException, JSONException {
-        SmbFile file = new SmbFile(path, auth);
-        if (file.exists()) {
-            SmbFile[] files = file.listFiles();
-            List<JSONObject> list = parseToList(files);
-            Collections.sort(list, new SambaComparator());
-            return new JSONArray(list);
-        }
-        return null;
+    public SambaFile(String path) throws MalformedURLException {
+        super(path, auth);
     }
 
     /**
@@ -81,7 +76,7 @@ class SambaAdapter {
      * @param String password
      * @return
      */
-    public void setPrincipal(String username, String password) {
+    public static void setPrincipal(String username, String password) {
         if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
             auth = new NtlmPasswordAuthentication(null, username, password);
         } else {
@@ -90,124 +85,86 @@ class SambaAdapter {
     }
 
     /**
-     * Creates empty directory
-     * @param String path
+     * 根据当前路径列出所有远程文件夹和文件
+     * 由于返回值不同，不能与父类方法重名
+     * @return JSONArray
+     */
+    public JSONArray listEntries() throws MalformedURLException, SmbException, JSONException {
+        if (this.exists()) {
+            SmbFile[] files = this.listFiles();
+            List<JSONObject> list = parseToList(files);
+            Collections.sort(list, new SambaComparator());
+            return new JSONArray(list);
+        }
+        return null;
+    }
+
+    /**
+     * 创建空文件夹
      * @return JSONObject
      */
-    public JSONObject mkdir(String path) throws MalformedURLException, SmbException, JSONException {
-        SmbFile smbFile = new SmbFile(path, auth);
-        smbFile.mkdir();
+    public JSONObject createDirectory() throws MalformedURLException, SmbException, JSONException {
+        this.mkdir();
 
         JSONObject entry = new JSONObject();
-        entry.put("name", parseName(smbFile.getName()));
-        entry.put("type", parseType(smbFile));
-        entry.put("path", smbFile.getPath());
+        entry.put("name", parseName(this.getName()));
+        entry.put("type", parseType(this));
+        entry.put("path", this.getPath());
         entry.put("size", 0);
         entry.put("lastModified", System.currentTimeMillis());
         return entry;
     }
 
     /**
-     * Creates empty file
-     * @param String path
+     * 创建空文件
      * @return JSONObject
      */
-    public JSONObject mkfile(String path) throws MalformedURLException, SmbException, JSONException {
-        SmbFile smbFile = new SmbFile(path, auth);
-        smbFile.createNewFile();
+    public JSONObject createFile() throws MalformedURLException, SmbException, JSONException {
+        this.createNewFile();
 
         JSONObject entry = new JSONObject();
-        entry.put("name", parseName(smbFile.getName()));
-        entry.put("type", parseType(smbFile));
-        entry.put("path", smbFile.getPath());
+        entry.put("name", parseName(this.getName()));
+        entry.put("ext", parseExtName(this.getName()));
+        entry.put("type", parseType(this));
+        entry.put("path", this.getPath());
         entry.put("size", 0);
         entry.put("lastModified", System.currentTimeMillis());
         return entry;
     }
 
     /**
-     * Deletes directories or files
-     * @param String path
-     * @return
-     */
-    public void delete(String path) throws MalformedURLException, SmbException {
-        SmbFile smbFile = new SmbFile(path, auth);
-        smbFile.delete();
-    }
-
-    /**
-     * Renames directory or file
-     * @param String path
-     * @param String newPath
-     * @return
-     */
-    public void renameTo(String path, String newPath) throws MalformedURLException, SmbException {
-        SmbFile smbFile = new SmbFile(path, auth);
-        smbFile.renameTo(new SmbFile(newPath, auth));
-    }
-
-    /**
-     * Copies directory or file to another path
-     * @param String path
-     * @param String newPath
-     * @return
-     */
-    public void copyTo(String path, String newPath) throws MalformedURLException, SmbException {
-        SmbFile smbFile = new SmbFile(path, auth);
-        smbFile.copyTo(new SmbFile(newPath, auth));
-    }
-
-    /**
-     * Moves directory or file to another panth
-     * @param String path
-     * @param String newPath
-     * @return
-     */
-    public void moveTo(String path, String newPath) throws MalformedURLException, SmbException {
-        SmbFile smbFile = new SmbFile(path, auth);
-        smbFile.copyTo(new SmbFile(newPath, auth));
-        smbFile.delete();
-    }
-
-    /**
-     * Reads remote file as byte array
-     * @param String path
+     * 读取文件内容为字节数组
      * @return byte[]
      */
-    public byte[] readAsByteArray(String path) throws IOException {
-        SmbFile file = new SmbFile(path, auth);
-        InputStream in = file.getInputStream();
-
-        byte[] bytes = new byte[(int) file.length()];
+    public byte[] readAsByteArray() throws IOException {
+        InputStream in = this.getInputStream();
+        byte[] bytes = new byte[(int) this.length()];
         in.read(bytes);
         in.close();
         return bytes;
     }
 
     /**
-     * Reads remote file as string text
+     * 读取文件内容为字符串
      * @param path
      * @return String
      */
-    public String readAsText(String path) throws IOException {
-        byte[] bytes = readAsByteArray(path);
-        return new String(bytes, "UTF-8");
+    public String readAsText() throws IOException {
+        return new String(readAsByteArray(), "UTF-8");
     }
 
     /**
-     * Upload local file to remote
+     * 上传本地文件到远程路径
      * @param String localPath
-     * @param String smbPath
-     * @param Callback callback(progress)
+     * @param TransferCallback callback(progress)
      * @return JSONObject
      */
-    public JSONObject upload(String localPath, String smbPath, Callback callback)
+    public JSONObject upload(String localPath, TransferCallback callback)
         throws IOException, JSONException {
 
         File file = new File(localPath);
-        SmbFile smbFile = new SmbFile(smbPath, auth);
         FileInputStream in = new FileInputStream(file);
-        OutputStream out = smbFile.getOutputStream();
+        OutputStream out = this.getOutputStream();
 
         long totalSize = file.length();
         long size = 0;
@@ -222,12 +179,60 @@ class SambaAdapter {
         out.close();
 
         JSONObject entry = new JSONObject();
-        entry.put("name", parseName(smbFile.getName()));
-        entry.put("type", parseType(smbFile));
-        entry.put("path", smbFile.getPath());
-        entry.put("size", smbFile.length());
+        entry.put("name", parseName(this.getName()));
+        entry.put("ext", parseExtName(this.getName()));
+        entry.put("type", parseType(this));
+        entry.put("path", this.getPath());
+        entry.put("size", this.length());
         entry.put("lastModified", System.currentTimeMillis());
         return entry;
+    }
+
+    /**
+     * 将远程文件下载到本地
+     * @param String localPath
+     * @param TransferCallback callback(progress)
+     * @return JSONObject
+     */
+    public void download(String localPath, TransferCallback callback)
+        throws IOException, JSONException {
+        InputStream in = this.getInputStream();
+        FileOutputStream out = new FileOutputStream(localPath);
+
+        long totalSize = this.length();
+        long size = 0;
+        byte[] b = new byte[BUFFER_SIZE];
+        int len = 0;
+        while((len = in.read(b)) > 0) {
+            out.write(b, 0, len);
+            size += len;
+            callback.onProgress((float) size / totalSize);
+        }
+        in.close();
+        out.close();
+    }
+
+    /**
+     * 根据文件名后缀获取文件类型分组
+     * @return int
+     */
+    public int getGroupType() {
+        String suffix = parseExtName();
+        for (Map.Entry<Integer, String> entry : GROUP_TYPES.entrySet()) {
+            String[] exts = entry.getValue().split(",");
+            for (String ext : exts) {
+                if (ext.equalsIgnoreCase(suffix)) return entry.getKey();
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * 获取文件名后缀
+     * @return String
+     */
+    public String parseExtName() {
+        return parseExtName(this.getName());
     }
 
     /* ----------------------------------------------------
@@ -246,11 +251,13 @@ class SambaAdapter {
             if (type != SmbFile.TYPE_FILESYSTEM && type != SmbFile.TYPE_SHARE) {
                 continue;
             }
-            if (file.getName().endsWith("$/")) {
+            String name = file.getName();
+            if (name.endsWith("$/")) {
                 continue;
             }
             JSONObject entry = new JSONObject();
-            entry.put("name", parseName(file.getName()));
+            entry.put("name", parseName(name));
+            entry.put("ext", parseExtName(name));
             entry.put("type", parseType(file));
             entry.put("path", file.getPath());
             entry.put("size", file.length());
@@ -279,10 +286,24 @@ class SambaAdapter {
     }
 
     /**
-     * Private comparator class for sorting
+     * 获取文件名后缀
+     * @param String name
+     * @return String
+     */
+    private String parseExtName(String name) {
+        int index = name.lastIndexOf(".");
+        return index > -1 ? name.substring(index + 1).toLowerCase() : "";
+    }
+
+    /* ----------------------------------------------------
+     * Inner class
+     * ------------------------------------------------- */
+
+    /**
+     * 列表排序类
      */
     private class SambaComparator implements Comparator<JSONObject> {
-        // Use chinese collator
+        // 使用中文排序
         private Collator collator = Collator.getInstance(Locale.CHINESE);
 
         @Override
@@ -300,6 +321,10 @@ class SambaAdapter {
 
 }
 
-interface Callback {
+/**
+ * 文件传输（上传下载）进度回调接口
+ * 需实现 onProgress 方法
+ */
+interface TransferCallback {
     public void onProgress(float progress);
 }

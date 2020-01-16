@@ -15,7 +15,7 @@ samba.auth('username', 'password')
 
 Lists files and directories by path. The path must be ends with '/', ex. smb://10.0.0.2/sharefolder/directory/
 ```
-samba.listFiles(path, success, error)
+samba.listEntries(path, success, error)
 ```
 
 Reads content by path:
@@ -32,14 +32,18 @@ samba.onUpload = function(progress) {
 }
 ```
 
-Creates empty file:
+Downloads remote file to local storage:
 ```
-samba.mkfile(path, success, error)
+samba.download(smbPath, success, error)
+samba.onDownload = function(progress) {
+    console.log(progress)
+}
 ```
 
-Creates empty directory:
+Creates empty directory or file:
 ```
-samba.mkdir(path, success, error)
+samba.createDirectory(path, success, error)
+samba.createFile(path, success, error)
 ```
 
 Deletes file or directory:
