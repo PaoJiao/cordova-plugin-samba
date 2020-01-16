@@ -1169,7 +1169,6 @@ public class PinchImageView extends ImageView  {
 
         /**
          * 创建惯性动画
-         *
          * 参数单位为 像素/帧
          *
          * @param vectorX 速度向量
