@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -50,10 +49,6 @@ public class ImageViewerActivity extends Activity {
     // PinchImageView 缓存
     private LinkedList<PinchImageView> imageViewCache = new LinkedList<PinchImageView>();
 
-    // 布局控件
-    private ProgressBar loading;
-    private ViewPager viewPager;
-
     /**
      * 覆盖 ImageView 创建方法
      * @param undle savedInstanceState
@@ -62,10 +57,8 @@ public class ImageViewerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.image_viewer);
-        loading = (ProgressBar) findViewById(R.id.loading);
-        loading.setVisibility(View.INVISIBLE);
 
-        viewPager = (ViewPager) findViewById(R.id.image_pager);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.image_pager);
         viewPager.setAdapter(new ImagePagerAdapter());
         viewPager.setCurrentItem(imageCreator.getCurrentIndex());
     }
@@ -83,10 +76,6 @@ public class ImageViewerActivity extends Activity {
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
         } else {
-            // 仅当前页面加载时显示loading
-            if (viewPager.getCurrentItem() == position) {
-                loading.setVisibility(View.VISIBLE);
-            }
             new ImageLoader(imageView).execute(position);
         }
     }
@@ -119,6 +108,7 @@ public class ImageViewerActivity extends Activity {
             PinchImageView piv;
             if (imageViewCache.size() > 0) {
                 piv = imageViewCache.remove();
+                piv.setImageBitmap(null);
                 piv.reset();
             } else {
                 piv = new PinchImageView(ImageViewerActivity.this);
@@ -169,7 +159,6 @@ public class ImageViewerActivity extends Activity {
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             imageView.setImageBitmap(bitmap);
-            loading.setVisibility(View.INVISIBLE);
         }
     }
 
