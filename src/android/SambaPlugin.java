@@ -261,7 +261,7 @@ public class SambaPlugin extends CordovaPlugin {
                         public int getCurrentIndex() {
                             int size = getCount();
                             for (int i = 0; i < size; i++) {
-                                if (imageFiles[i].getPath().equals(path)) return i;
+                                if (imageFiles.get(i).getPath().equals(path)) return i;
                             }
                             return 0;
                         }
