@@ -156,10 +156,10 @@ class SambaFile extends SmbFile {
     /**
      * 上传本地文件到远程路径
      * @param String localPath
-     * @param TransferCallback callback(progress)
+     * @param OnProgressListener listener
      * @return JSONObject
      */
-    public JSONObject upload(String localPath, TransferCallback callback)
+    public JSONObject upload(String localPath, OnProgressListener listener)
         throws IOException, JSONException {
 
         File file = new File(localPath);
@@ -173,7 +173,7 @@ class SambaFile extends SmbFile {
         while((len = in.read(b)) > 0) {
             out.write(b, 0, len);
             size += len;
-            callback.onProgress((float) size / totalSize);
+            listener.onProgress((float) size / totalSize);
         }
         in.close();
         out.close();
@@ -191,10 +191,10 @@ class SambaFile extends SmbFile {
     /**
      * 将远程文件下载到本地
      * @param String localPath
-     * @param TransferCallback callback(progress)
+     * @param OnProgressListener listener
      * @return JSONObject
      */
-    public void download(String localPath, TransferCallback callback)
+    public void download(String localPath, OnProgressListener listener)
         throws IOException, JSONException {
         InputStream in = this.getInputStream();
         FileOutputStream out = new FileOutputStream(localPath);
@@ -206,7 +206,7 @@ class SambaFile extends SmbFile {
         while((len = in.read(b)) > 0) {
             out.write(b, 0, len);
             size += len;
-            callback.onProgress((float) size / totalSize);
+            listener.onProgress((float) size / totalSize);
         }
         in.close();
         out.close();
@@ -319,12 +319,16 @@ class SambaFile extends SmbFile {
         }
     }
 
-}
+    /* ----------------------------------------------------
+     * public interface
+     * ------------------------------------------------- */
 
-/**
- * 文件传输（上传下载）进度回调接口
- * 需实现 onProgress 方法
- */
-interface TransferCallback {
-    public void onProgress(float progress);
+    /**
+     * 文件传输（上传下载）进度回调接口
+     * 需实现 onProgress 方法
+     */
+    public interface OnProgressListener {
+        public void onProgress(float progress);
+    }
+
 }

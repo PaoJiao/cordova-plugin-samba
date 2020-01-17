@@ -27,7 +27,7 @@ samba.readAsByteArray(path, success, error)
 Uploads local file to smb server:
 ```
 samba.upload(localPath, smbPath, success, error)
-samba.onUpload = function(progress) {
+samba.onProgress = function(progress) {
     console.log(progress)
 }
 ```
@@ -35,7 +35,7 @@ samba.onUpload = function(progress) {
 Downloads remote file to local storage:
 ```
 samba.download(smbPath, success, error)
-samba.onDownload = function(progress) {
+samba.onProgress = function(progress) {
     console.log(progress)
 }
 ```

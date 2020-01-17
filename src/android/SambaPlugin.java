@@ -183,10 +183,10 @@ public class SambaPlugin extends CordovaPlugin {
                     String fileName = nativePath.substring(index + 1);
 
                     SambaFile smbFile = new SambaFile(smbPath + fileName);
-                    JSONObject result = smbFile.upload(nativePath, new TransferCallback() {
+                    JSONObject result = smbFile.upload(nativePath, new SambaFile.OnProgressListener() {
                         @Override
                         public void onProgress(float progress) {
-                            webView.sendJavascript("window.samba.onUpload(" + progress + ")");
+                            webView.sendJavascript("window.samba.onProgress(" + progress + ")");
                         }
                     });
                     callback.success(result);
@@ -208,10 +208,10 @@ public class SambaPlugin extends CordovaPlugin {
                     SambaFile smbFile = new SambaFile(smbPath);
                     String localPath = getExternalStoragePath(smbFile.getGroupType()) + fileName;
 
-                    smbFile.download(localPath, new TransferCallback() {
+                    smbFile.download(localPath, new SambaFile.OnProgressListener() {
                         @Override
                         public void onProgress(float progress) {
-                            webView.sendJavascript("window.samba.onDownload(" + progress + ")");
+                            webView.sendJavascript("window.samba.onProgress(" + progress + ")");
                         }
                     });
                     callback.success(localPath);
