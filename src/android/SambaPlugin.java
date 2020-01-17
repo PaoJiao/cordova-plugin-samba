@@ -41,6 +41,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.List;
 
 import com.greatape.bmds.BufferedMediaDataSource;
 
@@ -250,15 +251,31 @@ public class SambaPlugin extends CordovaPlugin {
             @Override
             public void run() {
                 try {
-                    SambaFile file = new SambaFile(args.getString(0));
+                    String path = args.getString(0);
+                    String parentPath = path.substring(0, path.lastIndexOf("/") + 1);
+                    SambaFile directory = new SambaFile(parentPath);
+                    List<SambaFile> imageFiles = directory.listImages();
+
                     ImageViewerActivity.imageCreator = new ImageViewerActivity.ImageCreator() {
                         @Override
-                        public String getPath() {
-                            return file.getPath();
+                        public int getCurrentIndex() {
+                            int size = getCount();
+                            for (int i = 0; i < size; i++) {
+                                if (imageFiles[i].getPath().equals(path)) return i;
+                            }
+                            return 0;
                         }
                         @Override
-                        public byte[] getData() throws IOException {
-                            return file.readAsByteArray();
+                        public int getCount() {
+                            return imageFiles.size();
+                        }
+                        @Override
+                        public String getPath(int index) {
+                            return imageFiles.get(index).getPath();
+                        }
+                        @Override
+                        public byte[] getData(int index) throws IOException {
+                            return imageFiles.get(index).readAsByteArray();
                         }
                     };
 
