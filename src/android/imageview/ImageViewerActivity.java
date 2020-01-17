@@ -87,7 +87,7 @@ public class ImageViewerActivity extends Activity {
             if (viewPager.getCurrentItem() == position) {
                 loading.setVisibility(View.VISIBLE);
             }
-            new ImageCreatorTask(imageView).execute(position);
+            new ImageLoader(imageView).execute(position);
         }
     }
 
@@ -143,11 +143,11 @@ public class ImageViewerActivity extends Activity {
      * Android 不允许在主线程（UI线程）请求网络，否则抛出 NetworkOnMainThreadException
      * 故开启新的任务线程获取图片和更新UI。
      */
-    private class ImageCreatorTask extends AsyncTask<Integer, Integer, Bitmap> {
+    private class ImageLoader extends AsyncTask<Integer, Integer, Bitmap> {
 
         // 当前任务要渲染的图像控件
         private ImageView imageView;
-        public ImageCreatorTask(ImageView imageView) {
+        public ImageLoader(ImageView imageView) {
             this.imageView = imageView;
         }
 
