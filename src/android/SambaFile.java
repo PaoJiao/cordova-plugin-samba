@@ -90,13 +90,31 @@ class SambaFile extends SmbFile {
      * @return JSONArray
      */
     public JSONArray listEntries() throws MalformedURLException, SmbException, JSONException {
-        if (this.exists()) {
+        if (this.exists() && this.isDirectory()) {
             SmbFile[] files = this.listFiles();
             List<JSONObject> list = parseToList(files);
             Collections.sort(list, new SambaComparator());
             return new JSONArray(list);
         }
         return null;
+    }
+
+    /**
+     * 获取当前路径下所有图片文件
+     * @return List<SambaFile>
+     */
+    public List<SambaFile> listImages() throws MalformedURLException, SmbException {
+        List<SambaFile> list = new ArrayList<SambaFile>();
+        if (this.exists() && this.isDirectory()) {
+            String[] names = this.list();
+            for (String name : names) {
+                int groupType = getGroupType(parseExtName(name));
+                if (groupType == SambaFile.GROUP_IMAGE) {
+                    list.add(new SambaFile(this.getPath() + name));
+                }
+            }
+        }
+        return list;
     }
 
     /**
@@ -217,14 +235,7 @@ class SambaFile extends SmbFile {
      * @return int
      */
     public int getGroupType() {
-        String suffix = parseExtName();
-        for (Map.Entry<Integer, String> entry : GROUP_TYPES.entrySet()) {
-            String[] exts = entry.getValue().split(",");
-            for (String ext : exts) {
-                if (ext.equalsIgnoreCase(suffix)) return entry.getKey();
-            }
-        }
-        return 0;
+        return getGroupType(parseExtName());
     }
 
     /**
@@ -283,6 +294,21 @@ class SambaFile extends SmbFile {
      */
     private int parseType(SmbFile file) throws SmbException {
         return file.isFile() ? 0 : file.getType();
+    }
+
+    /**
+     * 根据后缀获取类型组
+     * @param String extname
+     * @return int
+     */
+    private int getGroupType(String extname) {
+        for (Map.Entry<Integer, String> entry : GROUP_TYPES.entrySet()) {
+            String[] exts = entry.getValue().split(",");
+            for (String ext : exts) {
+                if (ext.equalsIgnoreCase(extname)) return entry.getKey();
+            }
+        }
+        return 0;
     }
 
     /**
