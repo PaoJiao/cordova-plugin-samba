@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.text.Collator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -61,6 +62,9 @@ class SambaFile extends SmbFile {
 
     private static final int BUFFER_SIZE = 8192;
     private static NtlmPasswordAuthentication auth;
+
+    // 中文排序
+    private Collator collator = Collator.getInstance(Locale.CHINESE);
 
     /**
      * 重载构造器
@@ -107,6 +111,14 @@ class SambaFile extends SmbFile {
         List<SambaFile> list = new ArrayList<SambaFile>();
         if (this.exists() && this.isDirectory()) {
             String[] names = this.list();
+
+            Collections.sort(Arrays.asList(names), new Comparator<String>() {
+                @Override
+                public int compare(String s1, String s2) {
+                    return collator.compare(s1, s2);
+                }
+            });
+
             for (String name : names) {
                 int groupType = getGroupType(parseExtName(name));
                 if (groupType == SambaFile.GROUP_IMAGE) {
@@ -329,9 +341,6 @@ class SambaFile extends SmbFile {
      * 列表排序类
      */
     private class SambaComparator implements Comparator<JSONObject> {
-        // 使用中文排序
-        private Collator collator = Collator.getInstance(Locale.CHINESE);
-
         @Override
         public int compare(JSONObject o1, JSONObject o2) {
             try {
