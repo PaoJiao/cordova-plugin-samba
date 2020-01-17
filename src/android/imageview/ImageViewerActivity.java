@@ -105,7 +105,7 @@ public class ImageViewerActivity extends Activity {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 memoryCache.put(imageCreator.getPath(), bitmap);
                 return bitmap;
-            } catch (Exception e) {
+            } catch (IOException e) {
                 return null;
             }
         }
