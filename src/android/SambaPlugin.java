@@ -253,7 +253,11 @@ public class SambaPlugin extends CordovaPlugin {
                     SambaFile file = new SambaFile(args.getString(0));
                     ImageViewerActivity.imageCreator = new ImageViewerActivity.ImageCreator() {
                         @Override
-                        public byte[] getByteArray() throws IOException {
+                        public String getPath() {
+                            return file.getPath();
+                        }
+                        @Override
+                        public byte[] getData() throws IOException {
                             return file.readAsByteArray();
                         }
                     };
