@@ -73,11 +73,12 @@ public class GalleryActivity extends Activity {
                 itemView = inflater.inflate(R.layout.image_item, null);
             }
 
-            // 获取 item 布局中的控件
+            // 获取 item 布局中的控件并初始化
             ProgressBar loading = (ProgressBar) itemView.findViewById(R.id.loading);
             PinchImageView imageView = (PinchImageView) itemView.findViewById(R.id.image_view);
             imageView.setImageBitmap(null);
             imageView.reset();
+            loading.setVisibility(View.VISIBLE);
 
             // 加载图像
             imageSource.load(position, new ImageSource.OnImageLoadedListener() {
