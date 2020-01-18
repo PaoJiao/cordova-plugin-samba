@@ -256,30 +256,29 @@ public class SambaPlugin extends CordovaPlugin {
                     SambaFile directory = new SambaFile(parentPath);
                     List<SambaFile> imageFiles = directory.listImages();
 
-                    ImageViewerActivity.imageCreator = new ImageViewerActivity.ImageCreator() {
+                    GalleryActivity.imageSource = new ImageSource() {
                         @Override
-                        public int getCurrentIndex() {
-                            int size = getCount();
-                            for (int i = 0; i < size; i++) {
+                        public int currentIndex() {
+                            for (int i = 0; i < size(); i++) {
                                 if (imageFiles.get(i).getPath().equals(path)) return i;
                             }
                             return 0;
                         }
                         @Override
-                        public int getCount() {
+                        public int size() {
                             return imageFiles.size();
                         }
                         @Override
-                        public String getPath(int index) {
+                        public String key(int index) {
                             return imageFiles.get(index).getPath();
                         }
                         @Override
-                        public byte[] getData(int index) throws IOException {
+                        public byte[] data(int index) throws IOException {
                             return imageFiles.get(index).readAsByteArray();
                         }
                     };
 
-                    Intent intent = new Intent(cordova.getActivity(), ImageViewerActivity.class);
+                    Intent intent = new Intent(cordova.getActivity(), GalleryActivity.class);
                     cordova.getActivity().startActivity(intent);
                     callback.success();
                 } catch (Exception e) {

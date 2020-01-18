@@ -10,7 +10,8 @@
     <source-file src="src/android/SambaPlugin.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/SambaFile.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/imageview/PinchImageView.java" target-dir="src/net/cloudseat/smbova"/>
-    <source-file src="src/android/imageview/ImageViewerActivity.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/imageview/ImageSource.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/imageview/GalleryActivity.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/mediaplay/MediaPlayerActivity.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/util/NativePath.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/util/WakeOnLan.java" target-dir="src/net/cloudseat/smbova"/>
@@ -39,7 +40,7 @@
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <activity android:name="net.cloudseat.smbova.ImageViewerActivity"
+      <activity android:name="net.cloudseat.smbova.GalleryActivity"
         android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
         android:configChanges="orientation|screenSize"/>
 
