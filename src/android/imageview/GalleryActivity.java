@@ -1,11 +1,14 @@
 package net.cloudseat.smbova;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -18,8 +21,8 @@ public class GalleryActivity extends Activity {
     // 接受外部图像数据源传参
     public static ImageSource imageSource;
 
-    // PinchImageView 缓存
-    private LinkedList<PinchImageView> imageViewCache = new LinkedList<PinchImageView>();
+    // ViewPager Item 页面缓存
+    private LinkedList<View> itemViewCache = new LinkedList<View>();
 
     /**
      * 覆盖父类创建方法
@@ -60,37 +63,43 @@ public class GalleryActivity extends Activity {
         // 需要将显示的 ImageView 加入到 ViewGroup 中，然后返回该值
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-
-            // 创建 PinchImageView
-            PinchImageView piv;
-            if (imageViewCache.size() > 0) {
-                piv = imageViewCache.remove();
-                piv.setImageBitmap(null);
-                piv.reset();
+            View itemView;
+            if (itemViewCache.size() > 0) {
+                // 从缓存获取 item 布局
+                itemView = itemViewCache.remove();
             } else {
-                piv = new PinchImageView(GalleryActivity.this);
+                // 从 xml 获取 item 布局
+                LayoutInflater inflater = (LayoutInflater) container.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                itemView = inflater.inflate(R.layout.image_item, null);
             }
+
+            // 获取 item 布局中的控件
+            ProgressBar loading = (ProgressBar) itemView.findViewById(R.id.loading);
+            PinchImageView imageView = (PinchImageView) itemView.findViewById(R.id.image_view);
+            imageView.setImageBitmap(null);
+            imageView.reset();
 
             // 加载图像
             imageSource.load(position, new ImageSource.OnImageLoadedListener() {
                 @Override
                 public void onImageLoaded(Bitmap bitmap) {
-                    piv.setImageBitmap(bitmap);
+                    imageView.setImageBitmap(bitmap);
+                    loading.setVisibility(View.INVISIBLE);
                 }
             });
 
             // 加入到容器并返回
-            container.addView(piv);
-            return piv;
+            container.addView(itemView);
+            return itemView;
         }
 
         // 滑动的图片超出缓存范围（最多三张）会调用此方法将图片销毁
         // 需要将对应的 ImageView 从 ViewGroup 中移除
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            PinchImageView piv = (PinchImageView) object;
-            container.removeView(piv);
-            imageViewCache.add(piv);
+            View item = (View) object;
+            container.removeView(item);
+            itemViewCache.add(item);
         }
     }
 

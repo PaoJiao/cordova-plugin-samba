@@ -28,6 +28,7 @@
 
     <source-file src="src/android/res/libs/jcifs-1.3.19.jar" target-dir="libs" />
     <source-file src="src/android/res/layout/image_viewer.xml" target-dir="res/layout" />
+    <source-file src="src/android/res/layout/image_item.xml" target-dir="res/layout" />
     <source-file src="src/android/res/layout/media_player.xml" target-dir="res/layout" />
     <source-file src="src/android/res/drawable/play.png" target-dir="res/drawable" />
     <source-file src="src/android/res/drawable/pause.png" target-dir="res/drawable" />
