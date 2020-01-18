@@ -1,13 +1,11 @@
 package net.cloudseat.smbova;
 
 import android.app.Activity;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;

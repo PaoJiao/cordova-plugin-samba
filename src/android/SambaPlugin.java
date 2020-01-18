@@ -26,6 +26,7 @@ package net.cloudseat.smbova;
 import android.content.Context;
 import android.content.Intent;
 
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.webkit.MimeTypeMap;
@@ -46,12 +47,12 @@ import java.util.List;
 import com.greatape.bmds.BufferedMediaDataSource;
 
 /**
- * Plugin Main Class
+ * Samba 插件类
  */
 public class SambaPlugin extends CordovaPlugin {
 
     /**
-     * Plugin main method
+     * 覆盖父类方法
      */
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callback)
@@ -83,6 +84,9 @@ public class SambaPlugin extends CordovaPlugin {
         return true;
     }
 
+    /**
+     * 列出目录下文件夹和文件
+     */
     private void listEntries(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -97,6 +101,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 读取文本文件
+     */
     private void readAsText(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -111,6 +118,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 读取文件为字节数组
+     */
     private void readAsByteArray(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -125,6 +135,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 创建文件
+     */
     private void createFile(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -139,6 +152,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 创建文件夹
+     */
     private void createDirectory(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -153,6 +169,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 删除文件夹或文件
+     */
     private void delete(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -168,6 +187,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 上传文件
+     */
     private void upload(CordovaArgs args, CallbackContext callback) throws JSONException {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -198,6 +220,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 下载文件
+     */
     private void download(CordovaArgs args, CallbackContext callback) throws JSONException {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -205,7 +230,6 @@ public class SambaPlugin extends CordovaPlugin {
                 try {
                     String smbPath = args.getString(0);
                     String fileName = smbPath.substring(smbPath.lastIndexOf("/"));
-
                     SambaFile smbFile = new SambaFile(smbPath);
                     String localPath = getExternalStoragePath(smbFile.getGroupType()) + fileName;
 
@@ -215,6 +239,14 @@ public class SambaPlugin extends CordovaPlugin {
                             webView.sendJavascript("window.samba.onProgress(" + progress + ")");
                         }
                     });
+
+                    // 更新系统相册
+                    MediaScannerConnection.scanFile(
+                        cordova.getActivity(),
+                        new String[]{ localPath },
+                        new String[]{ getMimeType(localPath) },
+                        null
+                    );
                     callback.success(localPath);
                 } catch (Exception e) {
                     callback.error(e.getMessage());
@@ -223,14 +255,16 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 用本地应用打开文件
+     */
     private void openFile(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     String path = args.getString(0);
-                    String extension = MimeTypeMap.getFileExtensionFromUrl(path);
-                    String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+                    String mimeType = getMimeType(path);
 
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -246,6 +280,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 打开图片
+     */
     private void openImage(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -288,6 +325,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 打开音频或视频
+     */
     private void openMedia(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -307,6 +347,9 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    /**
+     * 网络唤醒
+     */
     private void wakeOnLan(CordovaArgs args, CallbackContext callback) {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -322,6 +365,21 @@ public class SambaPlugin extends CordovaPlugin {
         });
     }
 
+    ///////////////////////////////////////////////////////
+    // 私有工具方法
+    ///////////////////////////////////////////////////////
+
+    /**
+     * 根据文件路径获取 MimeType
+     */
+    private String getMimeType(String path) {
+        String extension = MimeTypeMap.getFileExtensionFromUrl(path).toLowerCase();
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+    }
+
+    /**
+     * 根据文件类型获取本地下载目录
+     */
     private String getExternalStoragePath(int groupType) {
         String externalStoragePath = "";
         if (groupType == SambaFile.GROUP_IMAGE) {
@@ -338,6 +396,9 @@ public class SambaPlugin extends CordovaPlugin {
         return externalStoragePath;
     }
 
+    /**
+     * 创建缓存媒体数据源
+     */
     private BufferedMediaDataSource createBufferedMediaDataSource(String path) throws IOException {
         SambaFile file = new SambaFile(path);
         return new BufferedMediaDataSource(new BufferedMediaDataSource.StreamCreator() {
