@@ -299,7 +299,7 @@ public class SambaPlugin extends CordovaPlugin {
                     SambaFile directory = new SambaFile(parentPath);
                     List<SambaFile> imageFiles = directory.listImages();
 
-                    GalleryActivity.imageSource = new ImageSource() {
+                    GalleryActivity.gallerySource = new GallerySource() {
                         @Override
                         public int currentIndex() {
                             for (int i = 0; i < size(); i++) {
@@ -340,10 +340,10 @@ public class SambaPlugin extends CordovaPlugin {
             public void run() {
                 try {
                     String path = args.getString(0);
-                    MediaPlayerActivity.dataSource = createBufferedMediaDataSource(path);
-                    MediaPlayerActivity.timedTextFile = createTempSubtitleFile(path);
+                    PlayerActivity.dataSource = createBufferedMediaDataSource(path);
+                    PlayerActivity.timedTextFile = createTempSubtitleFile(path);
 
-                    Intent intent = new Intent(cordova.getActivity(), MediaPlayerActivity.class);
+                    Intent intent = new Intent(cordova.getActivity(), PlayerActivity.class);
                     cordova.getActivity().startActivity(intent);
                     callback.success();
                 } catch (Exception e) {

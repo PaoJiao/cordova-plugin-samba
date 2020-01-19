@@ -9,27 +9,20 @@
   <platform name="android">
     <source-file src="src/android/SambaPlugin.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/SambaFile.java" target-dir="src/net/cloudseat/smbova"/>
-    <source-file src="src/android/imageview/PinchImageView.java" target-dir="src/net/cloudseat/smbova"/>
-    <source-file src="src/android/imageview/ImageSource.java" target-dir="src/net/cloudseat/smbova"/>
-    <source-file src="src/android/imageview/GalleryActivity.java" target-dir="src/net/cloudseat/smbova"/>
-    <source-file src="src/android/mediaplay/MediaPlayerActivity.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/gallery/GalleryActivity.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/gallery/GallerySource.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/gallery/PinchImageView.java" target-dir="src/net/cloudseat/smbova"/>
+    <source-file src="src/android/media/PlayerActivity.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/util/NativePath.java" target-dir="src/net/cloudseat/smbova"/>
     <source-file src="src/android/util/WakeOnLan.java" target-dir="src/net/cloudseat/smbova"/>
 
-    <source-file src="src/android/bmds/BmdsLog.java" target-dir="src/com/greatape/bmds"/>
-    <source-file src="src/android/bmds/BufferedDataSource.java" target-dir="src/com/greatape/bmds"/>
-    <source-file src="src/android/bmds/BufferedMediaDataSource.java" target-dir="src/com/greatape/bmds"/>
-    <source-file src="src/android/bmds/BufferedMediaStream.java" target-dir="src/com/greatape/bmds"/>
-    <source-file src="src/android/bmds/BufferedSourceBase.java" target-dir="src/com/greatape/bmds"/>
-    <source-file src="src/android/bmds/LoadRunner.java" target-dir="src/com/greatape/bmds"/>
-    <source-file src="src/android/bmds/LoadRunnerClient.java" target-dir="src/com/greatape/bmds"/>
-    <source-file src="src/android/bmds/MediaCache.java" target-dir="src/com/greatape/bmds"/>
-    <source-file src="src/android/bmds/ReadStats.java" target-dir="src/com/greatape/bmds"/>
-
     <source-file src="src/android/res/libs/jcifs-1.3.19.jar" target-dir="libs" />
-    <source-file src="src/android/res/layout/image_viewer.xml" target-dir="res/layout" />
-    <source-file src="src/android/res/layout/image_item.xml" target-dir="res/layout" />
+    <source-file src="src/android/res/libs/bmds-0.4.jar" target-dir="libs" />
+
+    <source-file src="src/android/res/layout/gallery_item.xml" target-dir="res/layout" />
+    <source-file src="src/android/res/layout/gallery_viewer.xml" target-dir="res/layout" />
     <source-file src="src/android/res/layout/media_player.xml" target-dir="res/layout" />
+
     <source-file src="src/android/res/drawable/play.png" target-dir="res/drawable" />
     <source-file src="src/android/res/drawable/pause.png" target-dir="res/drawable" />
     <source-file src="src/android/res/drawable/disc.png" target-dir="res/drawable" />
@@ -45,7 +38,7 @@
         android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
         android:configChanges="orientation|screenSize"/>
 
-      <activity android:name="net.cloudseat.smbova.MediaPlayerActivity"
+      <activity android:name="net.cloudseat.smbova.PlayerActivity"
         android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
         android:configChanges="orientation|screenSize"/>
     </config-file>

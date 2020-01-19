@@ -36,7 +36,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import net.cloudseat.smbova.R;
 
-public class MediaPlayerActivity extends Activity {
+public class PlayerActivity extends Activity {
 
     // 接收外部传来的媒体数据源
     public static MediaDataSource dataSource;
@@ -169,7 +169,7 @@ public class MediaPlayerActivity extends Activity {
         audioDisc.setVisibility(View.INVISIBLE);
 
         // 使用 GestureDetector 监听单击和双击事件
-        gestureDetector = new GestureDetector(MediaPlayerActivity.this, new GestureDetector.SimpleOnGestureListener() {
+        gestureDetector = new GestureDetector(PlayerActivity.this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
                 toggleControls();
@@ -426,7 +426,7 @@ public class MediaPlayerActivity extends Activity {
     }
 
     private void console(String text) {
-        Toast.makeText(MediaPlayerActivity.this, text, Toast.LENGTH_LONG).show();
+        Toast.makeText(PlayerActivity.this, text, Toast.LENGTH_LONG).show();
     }
 
 }

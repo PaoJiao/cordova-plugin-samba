@@ -19,7 +19,7 @@ import net.cloudseat.smbova.R;
 public class GalleryActivity extends Activity {
 
     // 接受外部图像数据源传参
-    public static ImageSource imageSource;
+    public static GallerySource gallerySource;
 
     // ViewPager Item 页面缓存
     private LinkedList<View> itemViewCache = new LinkedList<View>();
@@ -31,11 +31,12 @@ public class GalleryActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.image_viewer);
+        setContentView(R.layout.gallery_viewer);
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.image_pager);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+        viewPager.setPageMargin(50);
         viewPager.setAdapter(new GalleryAdapter());
-        viewPager.setCurrentItem(imageSource.currentIndex());
+        viewPager.setCurrentItem(gallerySource.currentIndex());
     }
 
     ///////////////////////////////////////////////////////
@@ -50,7 +51,7 @@ public class GalleryActivity extends Activity {
         // 获取要滑动的控件（图片）数量
         @Override
         public int getCount() {
-            return imageSource.size();
+            return gallerySource.size();
         }
 
         // 官方建议直接返回两个参数相等
@@ -70,7 +71,7 @@ public class GalleryActivity extends Activity {
             } else {
                 // 从 xml 获取 item 布局
                 LayoutInflater inflater = (LayoutInflater) container.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                itemView = inflater.inflate(R.layout.image_item, null);
+                itemView = inflater.inflate(R.layout.gallery_item, null);
             }
 
             // 获取 item 布局中的控件并初始化
@@ -81,7 +82,7 @@ public class GalleryActivity extends Activity {
             loading.setVisibility(View.VISIBLE);
 
             // 加载图像
-            imageSource.load(position, new ImageSource.OnImageLoadedListener() {
+            gallerySource.load(position, new GallerySource.OnImageLoadedListener() {
                 @Override
                 public void onImageLoaded(Bitmap bitmap) {
                     imageView.setImageBitmap(bitmap);

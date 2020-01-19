@@ -7,7 +7,7 @@ import android.util.LruCache;
 
 import java.io.IOException;
 
-public abstract class ImageSource {
+public abstract class GallerySource {
 
     /**
      * 子类必须实现的抽象方法
