@@ -59,6 +59,12 @@ public class SambaPlugin extends CordovaPlugin {
         throws JSONException {
 
         switch (action) {
+            case "runBackground":
+                Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.addCategory(Intent.CATEGORY_HOME);
+                cordova.getActivity().startActivity(intent);
+                callback.success();
+                break;
             case "auth":
                 String username = args.getString(0);
                 String password = args.getString(1);

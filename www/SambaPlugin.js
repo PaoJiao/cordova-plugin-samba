@@ -1,6 +1,10 @@
 const exec = require('cordova/exec')
 module.exports = {
 
+  runBackground(success, error) {
+    exec(success, error, 'SambaPlugin', 'runBackground', null)
+  },
+
   auth(username, password, success, error) {
     exec(success, error, 'SambaPlugin', 'auth', [ username, password ])
   },
