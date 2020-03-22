@@ -68,5 +68,5 @@ samba.openFile(path, success, error)
 
 Wake the server on lan by MAC address:
 ```
-samba.wakeOnLan(mac, success, error)
+samba.wakeOnLan(mac, port, success, error)
 ```

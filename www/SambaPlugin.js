@@ -53,8 +53,8 @@ module.exports = {
     exec(success, error, 'SambaPlugin', 'delete', [ path ])
   },
 
-  wakeOnLan(mac, success, error) {
-    exec(success, error, 'SambaPlugin', 'wakeOnLan', [ mac ])
+  wakeOnLan(mac, port, success, error) {
+    exec(success, error, 'SambaPlugin', 'wakeOnLan', [ mac, port ])
   }
 
 }

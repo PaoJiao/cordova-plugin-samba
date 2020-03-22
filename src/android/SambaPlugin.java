@@ -362,7 +362,8 @@ public class SambaPlugin extends CordovaPlugin {
             public void run() {
                 try {
                     String mac = args.getString(0);
-                    WakeOnLan.broadcast(mac);
+                    int port = args.getInt(1);
+                    WakeOnLan.broadcast(mac, port);
                     callback.success();
                 } catch (Exception e) {
                     callback.error(e.getMessage());

@@ -23,7 +23,18 @@ public class WakeOnLan {
      */
     public static void broadcast(String macAddress)
         throws UnknownHostException, SocketException, IOException {
-        broadcast(getBroadcastIp(), macAddress, PORT);
+        broadcast(macAddress, PORT);
+    }
+
+    /**
+     * 发送UDP数据包到广播地址
+     * @param macAddress 需要唤醒的机器的MAC地址
+     * @param port 需要唤醒的机器的端口
+     * @return
+     */
+    public static void broadcast(String macAddress, int port)
+        throws UnknownHostException, SocketException, IOException {
+        broadcast(getBroadcastIp(), macAddress, port == 0 ? PORT : port);
     }
 
     /**
